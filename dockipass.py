@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+
 from nuclear import CliBuilder, argument, flag, parameter, subcommand
 from pathlib import Path
 import subprocess
@@ -57,6 +60,9 @@ def start(name=DEFAULT_NAME):
     cmd = f"start {name}"
     run_multipass(cmd)
 
+def restart(name=DEFAULT_NAME):
+    cmd = f"restart {name}"
+    run_multipass(cmd)
 
 def stop(name=DEFAULT_NAME):
     cmd = f"stop {name}"
@@ -85,6 +91,9 @@ def __main__():
             argument("name", required=False, type=str, default=DEFAULT_NAME),
         ),
         subcommand("stop", help="stop multipass", run=stop).has(
+            argument("name", required=False, type=str, default=DEFAULT_NAME),
+        ),
+        subcommand("restart", help="restart multipass", run=restart).has(
             argument("name", required=False, type=str, default=DEFAULT_NAME),
         ),
         subcommand("launch", help="launch multipass", run=launch).has(
