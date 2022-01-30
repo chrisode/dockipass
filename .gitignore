@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Dockipass ignores
+cloud-init-config/*
+!cloud-init-config/template.yaml
