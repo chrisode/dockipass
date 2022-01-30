@@ -9,12 +9,12 @@ DEFAULT_NAME = "dockipass"
 
 
 def create_yaml(id_rsa, name=DEFAULT_NAME):
-    with open("cloud-init-configs/template.yaml", "r") as input_file, open(f"cloud-init-configs/{name}.yaml", "w") as output_file:
+    with open("cloud-init-config/template.yaml", "r") as input_file, open(f"cloud-init-config/{name}.yaml", "w") as output_file:
         for line in input_file:
             output = line
 
             if (line.find("replaceme") > 0):
-                output = line.replace("replaceme", id_rsa)
+                output = line.replace("replaceme", id_rsa.strip())
 
             output_file.write(output)
 
@@ -37,7 +37,12 @@ def mount_users_folder(name=DEFAULT_NAME):
 
 
 def add_docker_context(name=DEFAULT_NAME):
-    cmd = f"docker context create {name} --docker \"host=ssh://dockipass@{name}.local\""
+    cmd = f"docker context create {name} --docker \"host=ssh://ubuntu@{name}.local\""
+    run_cmd(cmd)
+
+
+def remove_docker_context(name=DEFAULT_NAME):
+    cmd = f"docker context rm {name}"
     run_cmd(cmd)
 
 
@@ -49,7 +54,7 @@ def use_docker_context(name=DEFAULT_NAME):
 def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2):
     setup()
 
-    cmd = f"launch -c {cpu} -m {memory} -d {disk} -n {name} 20.04 --cloud-init \"cloud-init-configs/{name}.yaml\""
+    cmd = f"launch -c {cpu} -m {memory} -d {disk} -n {name} 20.04 --cloud-init \"cloud-init-config/{name}.yaml\""
     run_multipass(cmd)
     mount_users_folder()
     add_docker_context()
@@ -68,6 +73,14 @@ def stop(name=DEFAULT_NAME):
     cmd = f"stop {name}"
     run_multipass(cmd)
 
+
+def delete(name=DEFAULT_NAME):
+    use_docker_context("default")
+    remove_docker_context(name)
+    
+    cmd = f"delete {name}"
+    run_multipass(cmd)
+    run_multipass("purge")
 
 def run_multipass(cmd):
     run_cmd(f"multipass {cmd.strip()}".strip())
@@ -94,6 +107,9 @@ def __main__():
             argument("name", required=False, type=str, default=DEFAULT_NAME),
         ),
         subcommand("restart", help="restart multipass", run=restart).has(
+            argument("name", required=False, type=str, default=DEFAULT_NAME),
+        ),
+        subcommand("delete", help="remove a multipass instance", run=delete).has(
             argument("name", required=False, type=str, default=DEFAULT_NAME),
         ),
         subcommand("launch", help="launch multipass", run=launch).has(

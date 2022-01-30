@@ -1,9 +1,9 @@
 ---
 users:
-  - name: dockipass
+  - name: ubuntu
     sudo: ALL=(ALL) NOPASSWD:ALL
     ssh-authorized-keys:
-      - ssh-rsa replaceme
+      - replaceme
 package_update: true
 packages:
   - docker
