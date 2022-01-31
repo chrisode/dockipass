@@ -14,7 +14,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+#lib/
 lib64/
 parts/
 sdist/
@@ -131,3 +131,4 @@ dmypy.json
 # Dockipass ignores
 cloud-init-config/*
 !cloud-init-config/template.yaml
+!cloud-init-config/alias.yaml

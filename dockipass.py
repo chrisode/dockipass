@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-
 from nuclear import CliBuilder, argument, flag, parameter, subcommand
 from pathlib import Path
-import subprocess
+
+from lib.commander import run as run_cmd
+from lib.multipass import launch_with_alias, start, stop, restart, delete as delete_multipass, launch as launch_multipass
 
 DEFAULT_NAME = "dockipass"
 
@@ -31,11 +32,6 @@ def setup():
     create_yaml(id_rsa)
 
 
-def mount_users_folder(name=DEFAULT_NAME):
-    cmd = f"mount /Users/ {name}"
-    run_multipass(cmd)
-
-
 def add_docker_context(name=DEFAULT_NAME):
     cmd = f"docker context create {name} --docker \"host=ssh://ubuntu@{name}.local\""
     run_cmd(cmd)
@@ -51,51 +47,25 @@ def use_docker_context(name=DEFAULT_NAME):
     run_cmd(cmd)
 
 
-def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2):
-    setup()
+def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, noalias=False):
 
-    cmd = f"launch -c {cpu} -m {memory} -d {disk} -n {name} 20.04 --cloud-init \"cloud-init-config/{name}.yaml\""
-    run_multipass(cmd)
-    mount_users_folder()
+    if noalias == False:
+        return launch_with_alias(name, memory, disk, cpu)
+
+    # setup()
+
+    launch_multipass(name, memory, disk, cpu, name)
+
     add_docker_context()
     use_docker_context()
 
 
-def start(name=DEFAULT_NAME):
-    cmd = f"start {name}"
-    run_multipass(cmd)
+def delete(name=DEFAULT_NAME, noalias=False):
+    if noalias == True:
+        use_docker_context("default")
+        remove_docker_context(name)
 
-def restart(name=DEFAULT_NAME):
-    cmd = f"restart {name}"
-    run_multipass(cmd)
-
-def stop(name=DEFAULT_NAME):
-    cmd = f"stop {name}"
-    run_multipass(cmd)
-
-
-def delete(name=DEFAULT_NAME):
-    use_docker_context("default")
-    remove_docker_context(name)
-    
-    cmd = f"delete {name}"
-    run_multipass(cmd)
-    run_multipass("purge")
-
-def run_multipass(cmd):
-    run_cmd(f"multipass {cmd.strip()}".strip())
-
-
-def run_cmd(cmd):
-    process = subprocess.Popen(cmd.strip(), shell=True, stdout=subprocess.PIPE)
-    while True:
-        output = process.stdout.readline()
-        if output == b'' and process.poll() is not None:
-            break
-        if output:
-            print(output.decode("utf-8").strip())
-
-    rc = process.poll()
+    delete_multipass(name, noalias)
 
 
 def __main__():
@@ -111,12 +81,14 @@ def __main__():
         ),
         subcommand("delete", help="remove a multipass instance", run=delete).has(
             argument("name", required=False, type=str, default=DEFAULT_NAME),
+            flag("noalias")
         ),
         subcommand("launch", help="launch multipass", run=launch).has(
             argument("name", required=False, type=str, default=DEFAULT_NAME),
             parameter("memory", "m", type=str, default="2G"),
             parameter("cpu", "c", type=int, default=2),
-            parameter("disk", "d", type=str, default="20G")
+            parameter("disk", "d", type=str, default="20G"),
+            flag("noalias", "n")
         )
     ).run()
 
