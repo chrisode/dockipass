@@ -7,6 +7,7 @@ from lib.commander import run as run_cmd
 from lib.multipass import launch_with_alias, start, stop, restart, delete as delete_multipass, launch as launch_multipass
 
 DEFAULT_NAME = "dockipass"
+HOME = str(Path.home())
 
 
 def create_yaml(id_rsa, name=DEFAULT_NAME):
@@ -21,9 +22,8 @@ def create_yaml(id_rsa, name=DEFAULT_NAME):
 
 
 def get_id_rsa():
-    home = str(Path.home())
     # TODO Check if id_rsa exists
-    with open(f"{home}/.ssh/id_rsa.pub") as f:
+    with open(f"{HOME}/.ssh/id_rsa.pub") as f:
         return f.readline()
 
 
@@ -50,9 +50,13 @@ def use_docker_context(name=DEFAULT_NAME):
 def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, noalias=False):
 
     if noalias == False:
-        return launch_with_alias(name, memory, disk, cpu)
+        launch_with_alias(name, memory, disk, cpu)
+        print("Docker have now been setup and aliased")
+        print(
+            f"To use Docker and compose from your terminal add multipass to your path: \"PATH={HOME}/Library/Application Support/multipass/bin:$PATH\"")
+        return
 
-    # setup()
+    setup()
 
     launch_multipass(name, memory, disk, cpu, name)
 

@@ -1,8 +1,6 @@
 import subprocess
 
 def run(cmd):
-    print(cmd)
-    return
     process = subprocess.Popen(cmd.strip(), shell=True, stdout=subprocess.PIPE)
     while True:
         output = process.stdout.readline()
