@@ -27,9 +27,9 @@ def get_id_rsa():
         return f.readline()
 
 
-def setup():
+def setup(name=DEFAULT_NAME):
     id_rsa = get_id_rsa()
-    create_yaml(id_rsa)
+    create_yaml(id_rsa, name)
 
 
 def add_docker_context(name=DEFAULT_NAME):
@@ -56,7 +56,7 @@ def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, noalias=False):
             f"To use Docker and compose from your terminal add multipass to your path: \"PATH={HOME}/Library/Application Support/multipass/bin:$PATH\"")
         return
 
-    setup()
+    setup(name)
 
     launch_multipass(name, memory, disk, cpu, name)
 
