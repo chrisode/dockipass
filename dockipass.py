@@ -5,6 +5,8 @@ from pathlib import Path
 
 from lib.commander import run as run_cmd
 from lib.multipass import launch_with_alias, start, stop, restart, delete as delete_multipass, launch as launch_multipass
+from lib.bind_local import get_docker_ports
+
 
 DEFAULT_NAME = "dockipass"
 HOME = str(Path.home())
@@ -93,7 +95,8 @@ def __main__():
             parameter("cpu", "c", type=int, default=2),
             parameter("disk", "d", type=str, default="20G"),
             flag("noalias", "n")
-        )
+        ),
+        subcommand("listen", run=get_docker_ports)
     ).run()
 
 
