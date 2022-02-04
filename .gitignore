@@ -132,3 +132,4 @@ dmypy.json
 cloud-init-config/*
 !cloud-init-config/template.yaml
 !cloud-init-config/alias.yaml
+forwared_ports.json

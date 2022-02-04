@@ -5,7 +5,7 @@ from pathlib import Path
 
 from lib.commander import run as run_cmd
 from lib.multipass import launch_with_alias, start, stop, restart, delete as delete_multipass, launch as launch_multipass
-from lib.bind_local import get_docker_ports
+from lib.bind_local import bind_local
 
 
 DEFAULT_NAME = "dockipass"
@@ -96,7 +96,9 @@ def __main__():
             parameter("disk", "d", type=str, default="20G"),
             flag("noalias", "n")
         ),
-        subcommand("listen", run=get_docker_ports)
+        subcommand("listen", run=bind_local).has(
+            flag("cleanup", "c")
+        )
     ).run()
 
 
