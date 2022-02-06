@@ -1,8 +1,12 @@
 import subprocess
 import os, signal
 
-def run(cmd):
+def run(cmd, live=True):
     process = subprocess.Popen(cmd.strip(), shell=True, stdout=subprocess.PIPE)
+
+    if live == False:
+        return process.stdout.read().decode("utf-8")
+
     while True:
         output = process.stdout.readline()
         if output == b'' and process.poll() is not None:
@@ -11,10 +15,7 @@ def run(cmd):
             print(output.decode("utf-8").strip())
 
     rc = process.poll()
-
-def run_bork(cmd):
-    process = subprocess.Popen(cmd.strip(), shell=True, stdout=subprocess.PIPE)
-    return process.stdout.read().decode("utf-8")
+  
 
 def run_in_background(cmd):
     process = subprocess.Popen(cmd.strip(), shell=True, stdout=subprocess.PIPE)

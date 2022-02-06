@@ -1,22 +1,21 @@
 
-from .commander import run_bork, run_in_background, kill_process
+from .commander import run, run_in_background, kill_process
 from json import dumps as json_dumps, loads as json_loads
 from os import path
 
 
-def bind_local(cleanup = False):
+def bind_local(cleanup=False):
 
     if cleanup == True:
         unbind_all()
         return
-    
 
     ports = get_docker_ports()
     forward_ports(ports)
 
 
 def get_docker_ports():
-    docker_output = run_bork('docker ps --format "{{.State}}Å{{.Ports}}"')
+    docker_output = run("docker ps --format \"{{.State}}Å{{.Ports}}\"", live = False)
 
     if not docker_output:
         forward_ports([])
@@ -92,7 +91,6 @@ def get_forwared_ports():
     global forwared_ports
 
     if not forwared_ports:
-
         if not path.exists(ports_file):
             return {}
 
@@ -122,11 +120,11 @@ def store_forwared_ports():
 
 # Unbinds all ports and resets forwarded_ports
 def unbind_all():
-    pids = run_bork("ps ax | grep [s]ocat | awk '{print $1}'")
+    pids = run("ps ax | grep [s]ocat | awk '{print $1}'", False)
     for pid in pids.split("\n"):
         if pid != "":
             kill_process(int(pid))
 
-    global forwared_ports 
+    global forwared_ports
     forwared_ports = {}
     store_forwared_ports()

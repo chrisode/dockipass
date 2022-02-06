@@ -8,12 +8,18 @@ It will let you launch a new VM and install docker inside and mount `/Users` in 
 You need multipass and python3 installed. 
 `brew install multipass python3`
 
+*Optional: Install socat to bind serices to localhost* 
+`brew install socat`
+
 Python also requires some pip packages installed
 `pip3 install -r requirements.txt`
 
 If you decide to use `docker context` will you also need to have a default public ssh key setup in `~/.ssh/id_rsa.pub`.
 
 You can then run `./dockipass.py launch` and it will setup, create and launch the virtual machine for you.
+
+## Access dockercontainers from localhost
+Multipass does not natively bind forwared ports in the VM to localhost. You can however use the listen command to do this, it will check which ports are forwarded for all running containers and then use `socat` to bind the port and forward traffic to it. It will also kill any running instances of socat when the container is stopped. 
 
 ## Usage
 ```sh
@@ -29,6 +35,7 @@ Commands:
   restart [NAME] - restart multipass
   delete [NAME]  - remove a multipass instance
   launch [NAME]  - launch multipass
+  listen         - Bind forwarded docker ports to localhost
 
 Run "dockipass.py COMMAND --help" for more information on a command.
 ```

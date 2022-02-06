@@ -96,7 +96,7 @@ def __main__():
             parameter("disk", "d", type=str, default="20G"),
             flag("noalias", "n")
         ),
-        subcommand("listen", run=bind_local).has(
+        subcommand("listen", help="Bind forwarded docker ports to localhost", run=bind_local).has(
             flag("cleanup", "c")
         )
     ).run()

@@ -1,6 +1,6 @@
-from lib.bind_local import bind_local, get_docker_ports, forward, add_forwared_port, get_forwared_ports, remove_forwared_port
+from lib.bind_local import bind_local, get_docker_ports, forward, add_forwared_port, get_forwared_ports
 import unittest
-from unittest.mock import patch, call
+from unittest.mock import patch
 import os
 import sys
 currentdir = os.path.dirname(os.path.realpath(__file__))
@@ -20,7 +20,7 @@ def docker_output(ports):
 
 forwarded_file = "forwared_ports.json"
 
-@patch("lib.bind_local.forwared_ports")
+
 class TestBindLocalSetup(unittest.TestCase):
 
     def setUp(self):
@@ -29,22 +29,20 @@ class TestBindLocalSetup(unittest.TestCase):
                 self.orgForwaredPorts = file.read()
 
             os.remove(forwarded_file)
-        print("setup")
 
     def tearDown(self):
         if self.orgForwaredPorts:
             with open(forwarded_file, "w+") as file:
                 file.write(self.orgForwaredPorts)
 
-
-    def test_should_return_forwared_ports_when_file_doesnt_exist(self, mock):
+    @patch("lib.bind_local.forwared_ports", {})
+    def test_should_return_forwared_ports_when_file_doesnt_exist(self):
         forwared_ports = get_forwared_ports()
         self.assertEqual(forwared_ports, {})
 
-
-    def test_should_create_forwared_json_if_file_doesnt_exist(self, mock):
+    @patch("lib.bind_local.forwared_ports", {})
+    def test_should_create_forwared_json_if_file_doesnt_exist(self):
         add_forwared_port(8080, 11)
-        remove_forwared_port(8080)
         self.assertTrue(os.path.exists(forwarded_file))
 
 
@@ -63,7 +61,7 @@ class TestBindLocalHelpers(unittest.TestCase):
             with open(forwarded_file, "w+") as file:
                 file.write(self.orgForwaredPorts)
 
-    @patch("lib.bind_local.run_bork", return_value=docker_output(["8080"]))
+    @patch("lib.bind_local.run", return_value=docker_output(["8080"]))
     def test_get_docker_ports_should_return_ports(self, mock_run):
         ports = get_docker_ports()
         self.assertEqual(ports, [8080])
