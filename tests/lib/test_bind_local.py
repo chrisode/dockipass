@@ -64,7 +64,7 @@ class TestBindLocalHelpers(unittest.TestCase):
     @patch("lib.bind_local.run", return_value=docker_output(["8080"]))
     def test_get_docker_ports_should_return_ports(self, mock_run):
         ports = get_docker_ports()
-        self.assertEqual(ports, [8080])
+        self.assertEqual(ports, ["8080"])
 
     @patch("lib.bind_local.run_in_background", return_value=11)
     def test_forward_runs_socat(self, mock_run_in_bg):
@@ -77,8 +77,6 @@ class TestBindLocalHelpers(unittest.TestCase):
         self.assertTrue(str(mock_run_in_bg.call_args[0]).find("8080") > -1)
 
 
-@patch("lib.bind_local.forward")
-@patch("lib.bind_local.kill_process")
 class TestBindLocal(unittest.TestCase):
 
     def setUp(self):
@@ -94,7 +92,9 @@ class TestBindLocal(unittest.TestCase):
             with open(forwarded_file, "w+") as file:
                 file.write(self.orgForwaredPorts)
 
-    @patch("lib.bind_local.get_docker_ports", return_value=[8080])
+    @patch("lib.bind_local.forward")
+    @patch("lib.bind_local.kill_process")
+    @patch("lib.bind_local.get_docker_ports", return_value=["8080"])
     def test_bind_local(self, mock_ports, mock_kill, mock_forward):
         bind_local()
 
@@ -102,11 +102,13 @@ class TestBindLocal(unittest.TestCase):
         mock_ports.assert_called()
 
         # It should forward the port
-        mock_forward.assert_called_with(8080)
+        mock_forward.assert_called_with("8080")
 
         # It should not have killed any process
         mock_kill.assert_not_called()
 
+    @patch("lib.bind_local.forward")
+    @patch("lib.bind_local.kill_process")
     @patch("lib.bind_local.get_docker_ports", return_value=[])
     def test_bind_local_kill(self, mock_ports, mock_kill, mock_forward):
         # It has ports already forwared
@@ -125,6 +127,8 @@ class TestBindLocal(unittest.TestCase):
             output = file.read()
             self.assertEqual(output, "{}")
 
+    @patch("lib.bind_local.forward")
+    @patch("lib.bind_local.kill_process")
     @patch("lib.bind_local.get_docker_ports", return_value=["8080"])
     def test_bind_local_no_change(self, mock_ports, mock_kill, mock_forward):
 
@@ -145,3 +149,27 @@ class TestBindLocal(unittest.TestCase):
         with open(forwarded_file, "r") as file:
             output = file.read()
             self.assertEqual(output, json)
+
+    @patch("lib.bind_local.run_in_background")
+    def test_bind_local_in_background(self, mock_run_in_background):
+        bind_local(background=True)
+        mock_run_in_background.assert_called_with(
+            "python3 ./dockipass.py background listen")
+
+    @patch("lib.bind_local.run_in_background")
+    @patch("lib.bind_local.add_forwared_port")
+    @patch("lib.bind_local.get_docker_ports", return_value=["8080"])
+    @patch("builtins.print")
+    def test_bind_local_verbose(self, mock_print, mock_ports, mock_bg, mock_forward):
+        bind_local(verbose=True)
+
+        mock_print.assert_called()
+
+    @patch("lib.bind_local.run_in_background")
+    @patch("lib.bind_local.add_forwared_port")
+    @patch("lib.bind_local.get_docker_ports", return_value=["8080"])
+    @patch("builtins.print")
+    def test_bind_local_no_verbose(self, mock_print, mock_ports, mock_bg, mock_forward):
+        bind_local(verbose=False)
+
+        mock_print.assert_not_called()

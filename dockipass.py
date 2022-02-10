@@ -2,10 +2,12 @@
 
 from nuclear import CliBuilder, argument, flag, parameter, subcommand
 from pathlib import Path
+import sys
 
 from lib.commander import run as run_cmd
 from lib.multipass import launch_with_alias, start, stop, restart, delete as delete_multipass, launch as launch_multipass
 from lib.bind_local import bind_local
+from lib.background_task import check_for_background_task, run_task_forever
 
 
 DEFAULT_NAME = "dockipass"
@@ -75,6 +77,10 @@ def delete(name=DEFAULT_NAME, noalias=False):
 
 
 def __main__():
+
+    if (check_for_background_task(sys.argv)):
+        run_task_forever(sys.argv[2])
+
     CliBuilder().has(
         subcommand("start", help="start multipass", run=start).has(
             argument("name", required=False, type=str, default=DEFAULT_NAME),
@@ -97,7 +103,9 @@ def __main__():
             flag("noalias", "n")
         ),
         subcommand("listen", help="Bind forwarded docker ports to localhost", run=bind_local).has(
-            flag("cleanup", "c")
+            flag("cleanup", "c"),
+            flag("background", "b"),
+            flag("verbose", "v")
         )
     ).run()
 

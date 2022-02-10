@@ -3,8 +3,17 @@ from .commander import run, run_in_background, kill_process
 from json import dumps as json_dumps, loads as json_loads
 from os import path
 
+VERBOSE = False
 
-def bind_local(cleanup=False):
+
+def bind_local(cleanup=False, background=False, verbose=False):
+    global VERBOSE
+    global forwared_ports
+    VERBOSE = verbose
+
+    if background == True:
+        run_in_background("python3 ./dockipass.py background listen")
+        return
 
     if cleanup == True:
         unbind_all()
@@ -13,9 +22,13 @@ def bind_local(cleanup=False):
     ports = get_docker_ports()
     forward_ports(ports)
 
+    VERBOSE = False
+    forwared_ports = {}
+
 
 def get_docker_ports():
-    docker_output = run("docker ps --format \"{{.State}}Å{{.Ports}}\"", live = False)
+    docker_output = run(
+        "docker ps --format \"{{.State}}Å{{.Ports}}\"", live=False)
 
     if not docker_output:
         forward_ports([])
@@ -45,7 +58,7 @@ def get_and_format_ports(ports):
     for port_addr in ports_list:
         port = get_port(port_addr)
         if (port):
-            formated_list.append(int(port))
+            formated_list.append(port)
 
     return formated_list
 
@@ -63,7 +76,6 @@ ports_file = "forwared_ports.json"
 
 def forward_ports(ports):
     forwared_ports = get_forwared_ports()
-
     for port in list(forwared_ports.keys()):
         if port not in ports:
             stop_forward(port)
@@ -71,20 +83,23 @@ def forward_ports(ports):
     for port in ports:
         if port not in forwared_ports:
             forward(port)
+        else:
+            log(
+                f"Port {port} is already forwarded on pid {forwared_ports[port]}")
 
 
 def stop_forward(port):
     pid = forwared_ports[port]
     kill_process(pid)
     remove_forwared_port(port)
-    print(f"Stopped forwarding on port: {8080}, killed pid: {pid}")
+    log(f"Stopped forwarding on port: {port}, killed pid: {pid}")
 
 
 def forward(port):
     cmd = f"socat \"tcp-listen:{port},bind=localhost,reuseaddr,fork\" \"tcp:dockipass-alias.local:{port}\""
     pid = run_in_background(cmd)
     add_forwared_port(port, pid)
-    print(f"Forwared port: {port}, socat running with pid: {pid}")
+    log(f"Forwarded port: {port}, socat running with pid: {pid}")
 
 
 def get_forwared_ports():
@@ -128,3 +143,8 @@ def unbind_all():
     global forwared_ports
     forwared_ports = {}
     store_forwared_ports()
+
+
+def log(msg):
+    if VERBOSE == True:
+        print(msg)

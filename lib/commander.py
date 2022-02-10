@@ -1,5 +1,7 @@
 import subprocess
-import os, signal
+import os
+import signal
+
 
 def run(cmd, live=True):
     process = subprocess.Popen(cmd.strip(), shell=True, stdout=subprocess.PIPE)
@@ -15,16 +17,16 @@ def run(cmd, live=True):
             print(output.decode("utf-8").strip())
 
     rc = process.poll()
-  
+
 
 def run_in_background(cmd):
     process = subprocess.Popen(cmd.strip(), shell=True, stdout=subprocess.PIPE)
     return process.pid
+
 
 def kill_process(pid):
     try:
         os.kill(pid, signal.SIGTERM)
         return True
     except OSError:
-        return False    
-    
+        return False
