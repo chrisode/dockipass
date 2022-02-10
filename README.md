@@ -11,8 +11,8 @@ You need multipass and python3 installed.
 *Optional: Install socat to bind serices to localhost* 
 `brew install socat`
 
-Python also requires some pip packages installed
-`pip3 install -r requirements.txt`
+Install dependecies with [Poetry](https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions) 
+`poetry install`
 
 If you decide to use `docker context` will you also need to have a default public ssh key setup in `~/.ssh/id_rsa.pub`.
 
