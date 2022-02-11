@@ -37,18 +37,16 @@ def setup(name=DEFAULT_NAME):
 
 
 def add_docker_context(name=DEFAULT_NAME):
-    cmd = f"docker context create {name} --docker \"host=ssh://ubuntu@{name}.local\""
-    run_cmd(cmd)
+    run_cmd(["docker", "context", "create", name, "--docker",
+            f"\"host=ssh://ubuntu@{name}.local\""])
 
 
 def remove_docker_context(name=DEFAULT_NAME):
-    cmd = f"docker context rm {name}"
-    run_cmd(cmd)
+    run_cmd(["docker", "context", "rm", name])
 
 
 def use_docker_context(name=DEFAULT_NAME):
-    cmd = f"docker context use {name}"
-    run_cmd(cmd)
+    run_cmd(["docker", "context", "use", name])
 
 
 def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, noalias=False):

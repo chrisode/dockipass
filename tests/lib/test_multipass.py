@@ -13,22 +13,26 @@ sys.path.append(parentdir)
 class TestMultipass(unittest.TestCase):
     def test_start(self, mock_run_cmd):
         start("test")
-        mock_run_cmd.assert_called_with("multipass start test")
+        mock_run_cmd.assert_called_with(
+            ["multipass", "start", "test"], shell=False)
 
     def test_restart(self, mock_run_cmd):
         restart("test")
-        mock_run_cmd.assert_called_with("multipass restart test")
+        mock_run_cmd.assert_called_with(
+            ["multipass", "restart", "test"], shell=False)
 
     def test_stop(self, mock_run_cmd):
         stop("test")
-        mock_run_cmd.assert_called_with("multipass stop test")
+        mock_run_cmd.assert_called_with(
+            ["multipass", "stop", "test"], shell=False)
 
     def test_launch(self, mock_run_cmd):
         launch("test")
 
         calls = [
-            call("multipass launch -c 2 -m 2G -d 20G -n test 20.04 --cloud-init \"cloud-init-config/dockipass.yaml\""),
-            call("multipass mount /Users/ test")
+            call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "20G", "-n",
+                 "test", "20.04", "--cloud-init", f"\"cloud-init-config/dockipass.yaml\""], shell=True),
+            call(["multipass", "mount", "/Users/", "test"], shell=False),
         ]
 
         mock_run_cmd.assert_has_calls(calls)
@@ -37,10 +41,12 @@ class TestMultipass(unittest.TestCase):
         launch_with_alias("test")
 
         calls = [
-            call("multipass launch -c 2 -m 2G -d 20G -n test-alias 20.04 --cloud-init \"cloud-init-config/alias.yaml\""),
-            call("multipass mount /Users/ test-alias"),
-            call("multipass alias test-alias:docker docker"),
-            call("multipass alias test-alias:docker-compose docker-compose")
+            call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "20G", "-n",
+                 "test-alias", "20.04", "--cloud-init", f"\"cloud-init-config/alias.yaml\""], shell=True),
+            call(["multipass", "mount", "/Users/", "test-alias"], shell=False),
+            call(["multipass", "alias", "test-alias:docker", "docker"], shell=False),
+            call(["multipass", "alias", "test-alias:docker-compose",
+                 "docker-compose"], shell=False)
         ]
 
         mock_run_cmd.assert_has_calls(calls)
@@ -49,10 +55,10 @@ class TestMultipass(unittest.TestCase):
         delete("test")
 
         calls = [
-            call("multipass unalias docker"),
-            call("multipass unalias docker-compose"),
-            call("multipass delete test-alias"),
-            call("multipass purge")
+            call(["multipass", "unalias", "docker"], shell=False),
+            call(["multipass", "unalias", "docker-compose"], shell=False),
+            call(["multipass", "delete", "test-alias"], shell=False),
+            call(["multipass", "purge"], shell=False)
         ]
 
         mock_run_cmd.assert_has_calls(calls)
@@ -61,8 +67,8 @@ class TestMultipass(unittest.TestCase):
         delete(name="test", noalias=True)
 
         calls = [
-            call("multipass delete test"),
-            call("multipass purge")
+            call(["multipass", "delete", "test"], shell=False),
+            call(["multipass", "purge"], shell=False)
         ]
 
         mock_run_cmd.assert_has_calls(calls)
@@ -75,8 +81,9 @@ class TestLaunch(unittest.TestCase):
         launch()
 
         calls = [
-            call("multipass launch -c 2 -m 2G -d 20G -n dockipass 20.04 --cloud-init \"cloud-init-config/dockipass.yaml\""),
-            call("multipass mount /Users/ dockipass")
+            call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "20G", "-n",
+                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/dockipass.yaml\""], shell=True),
+            call(["multipass", "mount", "/Users/", "dockipass"], shell=False),
         ]
 
         mock_run_cmd.assert_has_calls(calls)
@@ -85,8 +92,9 @@ class TestLaunch(unittest.TestCase):
         launch(cpu=4)
 
         calls = [
-            call("multipass launch -c 4 -m 2G -d 20G -n dockipass 20.04 --cloud-init \"cloud-init-config/dockipass.yaml\""),
-            call("multipass mount /Users/ dockipass")
+            call(["multipass", "launch", "-c", "4", "-m", "2G", "-d", "20G", "-n",
+                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/dockipass.yaml\""], shell=True),
+            call(["multipass", "mount", "/Users/", "dockipass"], shell=False),
         ]
 
         mock_run_cmd.assert_has_calls(calls)
@@ -95,8 +103,9 @@ class TestLaunch(unittest.TestCase):
         launch(memory="4G")
 
         calls = [
-            call("multipass launch -c 2 -m 4G -d 20G -n dockipass 20.04 --cloud-init \"cloud-init-config/dockipass.yaml\""),
-            call("multipass mount /Users/ dockipass")
+            call(["multipass", "launch", "-c", "2", "-m", "4G", "-d", "20G", "-n",
+                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/dockipass.yaml\""], shell=True),
+            call(["multipass", "mount", "/Users/", "dockipass"], shell=False),
         ]
 
         mock_run_cmd.assert_has_calls(calls)
@@ -105,8 +114,9 @@ class TestLaunch(unittest.TestCase):
         launch(disk="40G")
 
         calls = [
-            call("multipass launch -c 2 -m 2G -d 40G -n dockipass 20.04 --cloud-init \"cloud-init-config/dockipass.yaml\""),
-            call("multipass mount /Users/ dockipass")
+            call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "40G", "-n",
+                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/dockipass.yaml\""], shell=True),
+            call(["multipass", "mount", "/Users/", "dockipass"], shell=False),
         ]
 
         mock_run_cmd.assert_has_calls(calls)
@@ -115,8 +125,9 @@ class TestLaunch(unittest.TestCase):
         launch(config="test")
 
         calls = [
-            call("multipass launch -c 2 -m 2G -d 20G -n dockipass 20.04 --cloud-init \"cloud-init-config/test.yaml\""),
-            call("multipass mount /Users/ dockipass")
+            call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "20G", "-n",
+                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/test.yaml\""], shell=True),
+            call(["multipass", "mount", "/Users/", "dockipass"], shell=False),
         ]
 
         mock_run_cmd.assert_has_calls(calls)
