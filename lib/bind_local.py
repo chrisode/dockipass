@@ -6,15 +6,10 @@ from os import path
 VERBOSE = False
 
 
-def bind_local(cleanup=False, background=False, verbose=False):
+def bind_local(cleanup=False, verbose=False):
     global VERBOSE
     global forwared_ports
     VERBOSE = verbose
-
-    if background == True:
-        run_in_background(
-            ["python3", "./dockipass.py", "background", "listen"])
-        return
 
     if cleanup == True:
         unbind_all()
@@ -96,8 +91,7 @@ def stop_forward(port):
 
 
 def forward(port):
-    cmd = f"socat \"tcp-listen:{port},bind=localhost,reuseaddr,fork\" \"tcp:dockipass-alias.local:{port}\""
-    pid = run_in_background(cmd)
+    pid = run_in_background(["socat", f"\"tcp-listen:{port},bind=localhost,reuseaddr,fork\"", f"\"tcp:dockipass-alias.local:{port}\""], shell=True)
     add_forwared_port(port, pid)
     log(f"Forwarded port: {port}, socat running with pid: {pid}")
 

@@ -6,8 +6,8 @@ import sys
 
 from lib.commander import run as run_cmd
 from lib.multipass import launch_with_alias, start as start_multipass, stop, restart, delete as delete_multipass, launch as launch_multipass
-from lib.bind_local import bind_local
-from lib.background_task import check_for_background_task, run_task_forever
+from lib.bind_local import bind_local as _bind_local
+from lib.background_task import check_for_background_task, run_task_forever, run_task_in_background
 
 
 DEFAULT_NAME = "dockipass"
@@ -49,21 +49,23 @@ def use_docker_context(name=DEFAULT_NAME):
     run_cmd(["docker", "context", "use", name])
 
 
-def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, noalias=False):
+def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, noalias=False, nobind=False):
 
     if noalias == False:
         launch_with_alias(name, memory, disk, cpu)
         print("Docker have now been setup and aliased")
         print(
             f"To use Docker and compose from your terminal add multipass to your path: \"PATH={HOME}/Library/Application Support/multipass/bin:$PATH\"")
-        return
+    else:
+        setup(name)
 
-    setup(name)
+        launch_multipass(name, memory, disk, cpu, name)
 
-    launch_multipass(name, memory, disk, cpu, name)
+        add_docker_context()
+        use_docker_context()
 
-    add_docker_context()
-    use_docker_context()
+    if nobind == False:
+        bind_local(background=True)
 
 
 def start(name=DEFAULT_NAME, nobind=False):
@@ -71,7 +73,6 @@ def start(name=DEFAULT_NAME, nobind=False):
 
     if nobind == False:
         bind_local(background=True)
-        print("Started to listen for portchanges and binding them to localhost")
 
 
 def delete(name=DEFAULT_NAME, noalias=False):
@@ -82,11 +83,21 @@ def delete(name=DEFAULT_NAME, noalias=False):
     delete_multipass(name, noalias)
 
 
+def bind_local(cleanup=False, verbose=False, background=False):
+    if background == True:
+        run_task_in_background("listen")
+        print("Started to listen for portchanges in the background and binding them to localhost")
+        return
+
+    _bind_local(cleanup, verbose)
+
+
 def __main__():
 
     if (check_for_background_task(sys.argv)):
         run_task_forever(sys.argv[2])
-
+        return
+    
     CliBuilder().has(
         subcommand("start", help="start multipass", run=start).has(
             argument("name", required=False, type=str, default=DEFAULT_NAME),
@@ -107,7 +118,8 @@ def __main__():
             parameter("memory", "m", type=str, default="2G"),
             parameter("cpu", "c", type=int, default=2),
             parameter("disk", "d", type=str, default="20G"),
-            flag("noalias", "n")
+            flag("noalias", "n"),
+            flag("nobind", "n")
         ),
         subcommand("listen", help="Bind forwarded docker ports to localhost", run=bind_local).has(
             flag("cleanup", "c"),

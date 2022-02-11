@@ -151,12 +151,6 @@ class TestBindLocal(unittest.TestCase):
             self.assertEqual(output, json)
 
     @patch("lib.bind_local.run_in_background")
-    def test_bind_local_in_background(self, mock_run_in_background):
-        bind_local(background=True)
-        mock_run_in_background.assert_called_with(
-            ["python3", "./dockipass.py", "background", "listen"])
-
-    @patch("lib.bind_local.run_in_background")
     @patch("lib.bind_local.add_forwared_port")
     @patch("lib.bind_local.get_docker_ports", return_value=["8080"])
     @patch("builtins.print")

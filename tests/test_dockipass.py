@@ -1,4 +1,4 @@
-from dockipass import launch, start, delete
+from dockipass import launch, start, delete, bind_local
 import unittest
 from unittest.mock import patch, call
 import os
@@ -12,7 +12,8 @@ sys.path.append(parentdir)
 class TestLaunchDockipass(unittest.TestCase):
 
     @patch("builtins.print")
-    def test_launch_with_alias(self, mock_print, mock_run_cmd):
+    @patch("dockipass.bind_local")
+    def test_launch_with_alias(self, mock_bind_local, mock_print, mock_run_cmd):
 
         launch("test")
         calls = [
@@ -27,9 +28,12 @@ class TestLaunchDockipass(unittest.TestCase):
         mock_print.assert_called()
         mock_run_cmd.assert_has_calls(calls)
 
+        mock_bind_local.assert_called_with(background=True)
+
     @patch("dockipass.setup")
     @patch("dockipass.run_cmd")
-    def test_launch_with_noalias(self, mock_run_cmd2, mock_setup, mock_run_cmd):
+    @patch("dockipass.bind_local")
+    def test_launch_with_noalias(self, mock_bind_local, mock_run_cmd2, mock_setup, mock_run_cmd):
         launch("test", noalias=True)
 
         mock_setup.assert_called_with("test")
@@ -46,16 +50,15 @@ class TestLaunchDockipass(unittest.TestCase):
             call(["docker", "context", "use", "dockipass"])
         ])
 
-    @patch("builtins.print")
-    @patch("dockipass.bind_local")
-    @patch("dockipass.start_multipass")
-    def test_start(self, mock_start, mock_bind_local, mock_print, mock_run_cmd):
-        start("test")
-        mock_start.assert_called_with("test")
-        
         mock_bind_local.assert_called_with(background=True)
 
-        mock_print.assert_called_with("Started to listen for portchanges and binding them to localhost")
+    @patch("dockipass.bind_local")
+    @patch("dockipass.start_multipass")
+    def test_start(self, mock_start, mock_bind_local, mock_run_cmd):
+        start("test")
+        mock_start.assert_called_with("test")
+
+        mock_bind_local.assert_called_with(background=True)
 
     @patch("builtins.print")
     @patch("dockipass.bind_local")
@@ -64,7 +67,7 @@ class TestLaunchDockipass(unittest.TestCase):
         start("test", nobind=True)
 
         mock_start.assert_called_with("test")
-        
+
         mock_bind_local.assert_not_called()
 
         mock_print.assert_not_called()
@@ -99,3 +102,12 @@ class TestDeleteDockipass(unittest.TestCase):
             call(["docker", "context", "use", "default"]),
             call(["docker", "context", "rm", "test"])
         ])
+
+
+class TestDockipass(unittest.TestCase):
+    @patch("builtins.print")
+    @patch("dockipass.run_task_in_background")
+    def test_bind_local_in_background(self, mock_run_task_in_background, mock_print):
+        bind_local(background=True)
+        mock_run_task_in_background.assert_called_with("listen")
+        mock_print.assert_called_with("Started to listen for portchanges in the background and binding them to localhost")

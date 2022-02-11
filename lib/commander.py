@@ -25,8 +25,11 @@ def run(cmd: list, live=True, shell=False):
     rc = process.poll()
 
 
-def run_in_background(cmd):
-    process = subprocess.Popen(cmd.strip(), shell=True, stdout=subprocess.PIPE)
+def run_in_background(cmd: list, shell=False):
+    if shell == True:
+        cmd = " ".join(cmd)
+
+    process = subprocess.Popen(cmd, shell=shell, stdout=subprocess.PIPE)
     return process.pid
 
 
