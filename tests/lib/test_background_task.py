@@ -1,6 +1,6 @@
-from lib.background_task import check_for_background_task, run_task, run_task_in_background
+from lib.background_task import check_for_background_task, run_task, run_task_in_background, stop_task_in_background
 import unittest
-from unittest.mock import patch, call
+from unittest.mock import patch
 import os
 import sys
 currentdir = os.path.dirname(os.path.realpath(__file__))
@@ -47,3 +47,17 @@ class BackroundTasks(unittest.TestCase):
         mock_run_cmd.assert_called_with(["ps", "ax"], live=False)
         mock_run_in_bg.not_called("")
         mock_print.assert_not_called()
+
+    @patch("lib.commander.run", return_value="13212 process1\n123132 process3\n123123 python3 ./dockipass.py background listen\n123413 tests2")
+    @patch("lib.background_task.kill_process")
+    def test_stop_task_running_in_background(self, mock_kill, mock_run_cmd):
+        stop_task_in_background("listen")
+        mock_run_cmd.assert_called_with(["ps", "ax"], live=False)
+        mock_kill.assert_called_with(123123)
+
+    @patch("lib.commander.run", return_value="13212 process1\n123132 process3\n123413 tests2")
+    @patch("lib.background_task.kill_process")
+    def test_stop_task_not_running_in_background(self, mock_kill, mock_run_cmd):
+        stop_task_in_background("listen")
+        mock_run_cmd.assert_called_with(["ps", "ax"], live=False)
+        mock_kill.assert_not_called()

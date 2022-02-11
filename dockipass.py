@@ -5,9 +5,9 @@ from pathlib import Path
 import sys
 
 from lib.commander import run as run_cmd
-from lib.multipass import launch_with_alias, start as start_multipass, stop, restart, delete as delete_multipass, launch as launch_multipass
+from lib.multipass import launch_with_alias, start as start_multipass, stop as stop_multipass, restart, delete as delete_multipass, launch as launch_multipass
 from lib.bind_local import bind_local as _bind_local
-from lib.background_task import check_for_background_task, run_task_forever, run_task_in_background
+from lib.background_task import check_for_background_task, run_task_forever, run_task_in_background, stop_task_in_background
 
 
 DEFAULT_NAME = "dockipass"
@@ -73,6 +73,12 @@ def start(name=DEFAULT_NAME, nobind=False):
 
     if nobind == False:
         bind_local(background=True)
+
+
+def stop(name=DEFAULT_NAME):
+    stop_task_in_background("listen")
+    bind_local(cleanup=True)
+    stop_multipass(name)
 
 
 def delete(name=DEFAULT_NAME, noalias=False):

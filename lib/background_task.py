@@ -1,6 +1,6 @@
 from time import sleep
 from .bind_local import bind_local
-from .commander import find_process, run_in_background
+from .commander import find_process, run_in_background, kill_process
 
 available_background_tasks = {"listen": bind_local}
 
@@ -25,6 +25,12 @@ def run_task_in_background(task):
     run_in_background(["python3", "./dockipass.py", "background", task])
 
 
+def stop_task_in_background(task):
+    pids = find_process(f"background {task}")
+    for pid in pids:
+        kill_process(int(pid))
+
+
 def run_task_forever(task, sleep_time=30):
     while True:
         result = run_task(task)
@@ -39,6 +45,7 @@ def run_task(task):
         return False
 
     available_background_tasks[task]()
+
 
 def check_if_task_is_running(task):
     pids = find_process(f"background {task}")

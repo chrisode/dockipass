@@ -1,4 +1,4 @@
-from dockipass import launch, start, delete, bind_local
+from dockipass import launch, start, delete, bind_local, stop
 import unittest
 from unittest.mock import patch, call
 import os
@@ -60,17 +60,25 @@ class TestLaunchDockipass(unittest.TestCase):
 
         mock_bind_local.assert_called_with(background=True)
 
-    @patch("builtins.print")
     @patch("dockipass.bind_local")
     @patch("dockipass.start_multipass")
-    def test_start_and_not_binding_ports(self, mock_start, mock_bind_local, mock_print, mock_run_cmd):
+    def test_start_and_not_binding_ports(self, mock_start, mock_bind_local, mock_run_cmd):
         start("test", nobind=True)
 
         mock_start.assert_called_with("test")
 
         mock_bind_local.assert_not_called()
 
-        mock_print.assert_not_called()
+
+    @patch("dockipass.bind_local")
+    @patch("dockipass.stop_task_in_background")
+    @patch("dockipass.stop_multipass")
+    def test_stop(self, mock_stop, mock_stop_task, mock_bind_local, mock_run_cmd):
+        stop("test")
+        mock_stop.assert_called_with("test")
+
+        mock_stop_task.assert_called_with("listen")
+        mock_bind_local.assert_called_with(cleanup=True)
 
 
 @patch("lib.multipass.run_cmd")
