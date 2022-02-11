@@ -1,4 +1,4 @@
-from lib.bind_local import bind_local, get_docker_ports, forward, add_forwared_port, get_forwared_ports
+from lib.bind_local import bind_local, get_docker_ports, forward, add_forwared_port, get_forwared_ports, unbind_all
 import unittest
 from unittest.mock import patch
 import os
@@ -154,7 +154,7 @@ class TestBindLocal(unittest.TestCase):
     def test_bind_local_in_background(self, mock_run_in_background):
         bind_local(background=True)
         mock_run_in_background.assert_called_with(
-            "python3 ./dockipass.py background listen")
+            ["python3", "./dockipass.py", "background", "listen"])
 
     @patch("lib.bind_local.run_in_background")
     @patch("lib.bind_local.add_forwared_port")
@@ -173,3 +173,10 @@ class TestBindLocal(unittest.TestCase):
         bind_local(verbose=False)
 
         mock_print.assert_not_called()
+
+    @patch("lib.commander.run", return_value="123123 testar2\n11 s008  S      0:00.01 socat tcp-listen:8080,bind=localhost,reuseaddr,fork tcp:dockipass-alias.local:8080\n124123 testtest")
+    @patch("lib.bind_local.kill_process")
+    def test_unbind_all(self, mock_kill, mock_run):
+        unbind_all()
+        mock_run.assert_called_with(["ps", "ax"], live=False)
+        mock_kill.assert_called_with(11)

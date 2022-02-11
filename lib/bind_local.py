@@ -1,5 +1,5 @@
 
-from .commander import run, run_in_background, kill_process
+from .commander import run, run_in_background, kill_process, find_process
 from json import dumps as json_dumps, loads as json_loads
 from os import path
 
@@ -12,7 +12,8 @@ def bind_local(cleanup=False, background=False, verbose=False):
     VERBOSE = verbose
 
     if background == True:
-        run_in_background("python3 ./dockipass.py background listen")
+        run_in_background(
+            ["python3", "./dockipass.py", "background", "listen"])
         return
 
     if cleanup == True:
@@ -28,24 +29,20 @@ def bind_local(cleanup=False, background=False, verbose=False):
 
 def get_docker_ports():
     docker_output = run(
-        "docker ps --format \"{{.State}}Å{{.Ports}}\"", live=False)
+        ["docker", "ps", "--format", "\"{{.Ports}}\""], live=False)
 
     if not docker_output:
         forward_ports([])
         return False
 
-    rows = docker_output.split("\n")
+    rows = docker_output.strip("\"").split("\n")
 
     all_ports = []
     for row in rows:
         if not row:
             continue
-        state, ports = row.split("Å")
 
-        if state != "running":
-            continue
-
-        ports_list = get_and_format_ports(ports)
+        ports_list = get_and_format_ports(row)
         all_ports.extend(ports_list)
 
     return all_ports
@@ -79,6 +76,9 @@ def forward_ports(ports):
     for port in list(forwared_ports.keys()):
         if port not in ports:
             stop_forward(port)
+
+    if not ports or len(ports) == 0:
+        return
 
     for port in ports:
         if port not in forwared_ports:
@@ -135,8 +135,9 @@ def store_forwared_ports():
 
 # Unbinds all ports and resets forwarded_ports
 def unbind_all():
-    pids = run("ps ax | grep [s]ocat | awk '{print $1}'", False)
-    for pid in pids.split("\n"):
+    pids = find_process("socat")
+
+    for pid in pids:
         if pid != "":
             kill_process(int(pid))
 

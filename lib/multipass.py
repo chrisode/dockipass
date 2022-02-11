@@ -1,4 +1,3 @@
-from os import remove
 from .commander import run as run_cmd
 
 aliases = ["docker", "docker-compose"]
@@ -7,18 +6,15 @@ DEFAULT_NAME = "dockipass"
 
 
 def start(name=DEFAULT_NAME):
-    cmd = f"start {name}"
-    _run_multipass(cmd)
+    _run_multipass(["start", name])
 
 
 def restart(name=DEFAULT_NAME):
-    cmd = f"restart {name}"
-    _run_multipass(cmd)
+    _run_multipass(["restart", name])
 
 
 def stop(name=DEFAULT_NAME):
-    cmd = f"stop {name}"
-    _run_multipass(cmd)
+    _run_multipass(["stop", name])
 
 
 def delete(name=DEFAULT_NAME, noalias=False):
@@ -26,8 +22,8 @@ def delete(name=DEFAULT_NAME, noalias=False):
         remove_alias()
         name = f"{name}-alias"
 
-    _run_multipass(f"delete {name}")
-    _run_multipass("purge")
+    _run_multipass(["delete", name])
+    _run_multipass(["purge"])
 
 
 def launch_with_alias(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2):
@@ -37,25 +33,25 @@ def launch_with_alias(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2):
 
 
 def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, config=DEFAULT_NAME):
-    cmd = f"launch -c {cpu} -m {memory} -d {disk} -n {name} 20.04 --cloud-init \"cloud-init-config/{config}.yaml\""
-    _run_multipass(cmd)
+    _run_multipass(["launch", "-c", str(cpu), "-m", memory, "-d", disk, "-n",
+                   name, "20.04", "--cloud-init", f"\"cloud-init-config/{config}.yaml\""], shell=True)
     mount_users_folder(name)
 
 
 def remove_alias():
     for alias in aliases:
-        _run_multipass(f"unalias {alias}")
+        _run_multipass(["unalias", alias])
 
 
 def create_alias(name=DEFAULT_NAME):
     for alias in aliases:
-        _run_multipass(f"alias {name}:{alias} {alias}")
+        _run_multipass(["alias", f"{name}:{alias}", alias])
 
 
 def mount_users_folder(name=DEFAULT_NAME):
-    cmd = f"mount /Users/ {name}"
-    _run_multipass(cmd)
+    _run_multipass(["mount", "/Users/", name])
 
 
-def _run_multipass(cmd):
-    run_cmd(f"multipass {cmd.strip()}".strip())
+def _run_multipass(cmd: list, shell=False):
+    cmd.insert(0, "multipass")
+    run_cmd(cmd, shell=shell)
