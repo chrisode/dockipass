@@ -4,10 +4,12 @@ import signal
 
 
 def run(cmd, live=True):
-    process = subprocess.Popen(cmd.strip(), shell=True, stdout=subprocess.PIPE)
+    process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE)
 
     if live == False:
-        return process.stdout.read().decode("utf-8")
+        output = process.stdout.read().decode("utf-8")
+        process.communicate()
+        return output
 
     while True:
         output = process.stdout.readline()

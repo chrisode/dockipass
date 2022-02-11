@@ -1,4 +1,4 @@
-from dockipass import launch, delete
+from dockipass import launch, start, delete
 import unittest
 from unittest.mock import patch, call
 import os
@@ -42,6 +42,29 @@ class TestLaunchDockipass(unittest.TestCase):
                 'docker context create dockipass --docker "host=ssh://ubuntu@dockipass.local"'),
             call('docker context use dockipass')
         ])
+
+    @patch("builtins.print")
+    @patch("dockipass.bind_local")
+    @patch("dockipass.start_multipass")
+    def test_start(self, mock_start, mock_bind_local, mock_print, mock_run_cmd):
+        start("test")
+        mock_start.assert_called_with("test")
+        
+        mock_bind_local.assert_called_with(background=True)
+
+        mock_print.assert_called_with("Started to listen for portchanges and binding them to localhost")
+
+    @patch("builtins.print")
+    @patch("dockipass.bind_local")
+    @patch("dockipass.start_multipass")
+    def test_start_and_not_binding_ports(self, mock_start, mock_bind_local, mock_print, mock_run_cmd):
+        start("test", nobind=True)
+
+        mock_start.assert_called_with("test")
+        
+        mock_bind_local.assert_not_called()
+
+        mock_print.assert_not_called()
 
 
 @patch("lib.multipass.run_cmd")

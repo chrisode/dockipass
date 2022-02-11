@@ -38,3 +38,11 @@ class BackroundTasks(unittest.TestCase):
         run_task("listen")
 
         mock_print.assert_called()
+
+    @patch("builtins.print")
+    @patch("lib.background_task.run_cmd", return_value="process1\nprocess3\npython3 ./dockipass.py background listen\ntests2")
+    @patch("lib.background_task.available_background_tasks", {"listen": func})
+    def test_dont_start_task_when_already_running_in_background(self, mock_run_cmd, mock_print):
+        run_task("listen")
+        mock_run_cmd.assert_called_with(["ps", "ax"], live=False)
+        mock_print.assert_not_called()

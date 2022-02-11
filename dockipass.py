@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 
 from lib.commander import run as run_cmd
-from lib.multipass import launch_with_alias, start, stop, restart, delete as delete_multipass, launch as launch_multipass
+from lib.multipass import launch_with_alias, start as start_multipass, stop, restart, delete as delete_multipass, launch as launch_multipass
 from lib.bind_local import bind_local
 from lib.background_task import check_for_background_task, run_task_forever
 
@@ -68,6 +68,14 @@ def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, noalias=False):
     use_docker_context()
 
 
+def start(name=DEFAULT_NAME, nobind=False):
+    start_multipass(name)
+
+    if nobind == False:
+        bind_local(background=True)
+        print("Started to listen for portchanges and binding them to localhost")
+
+
 def delete(name=DEFAULT_NAME, noalias=False):
     if noalias == True:
         use_docker_context("default")
@@ -84,6 +92,7 @@ def __main__():
     CliBuilder().has(
         subcommand("start", help="start multipass", run=start).has(
             argument("name", required=False, type=str, default=DEFAULT_NAME),
+            flag("nobind", "n")
         ),
         subcommand("stop", help="stop multipass", run=stop).has(
             argument("name", required=False, type=str, default=DEFAULT_NAME),
