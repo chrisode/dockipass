@@ -5,7 +5,7 @@ import sys
 import json
 from pathlib import Path
 from lib.commander import run, find_process, kill_process
-from lib.multipass import aliases
+from lib.multipass import aliases, modify_compose_alias
 from tests.test_helpers.common import backup_forwared, restore_forwarded
 
 currentdir = os.path.dirname(os.path.realpath(__file__))
@@ -47,6 +47,7 @@ def restore_alias():
         for alias in aliases:
             run(["multipass", "alias",
                 f"{name}:{alias}", alias], live=False, mute_error=True)
+        modify_compose_alias()
 
 
 def remove_alias():
@@ -73,9 +74,9 @@ class Feature_Test_Dockipass(unittest.TestCase):
         backup_forwared()
         remove_alias()
 
-    # def test_fun_test(self):
-    #     with open("forwared_ports.json", "w+") as file:
-    #         file.write("{}")
+    def test_fun_test(self):
+        with open("forwared_ports.json", "w+") as file:
+            file.write("{}")
 
     def test_1launch(self):
 
@@ -94,8 +95,15 @@ class Feature_Test_Dockipass(unittest.TestCase):
         self.assertIn("/Users", info["mounts"])
 
         # Aliases should have been setup for docker and docker-compose
-        aliases = os.listdir(f"{HOME}/Library/Application Support/multipass/bin")
+        aliases = os.listdir(
+            f"{HOME}/Library/Application Support/multipass/bin")
         self.assertListEqual(aliases, ["docker", "docker-compose"])
+
+        # Docker compose alias should have file added to it
+        with open(f"{HOME}/Library/Application Support/multipass/bin/docker-compose", "r") as file:
+            output = file.read()
+            self.assertIn(
+                '"/Library/Application Support/com.canonical.multipass/bin/multipass" docker-compose -- -f "$(pwd)/docker-compose.yaml" "${@}"', output.split("\n"))
 
         # Check for bind
         pids = find_process("background listen")
@@ -139,13 +147,15 @@ class Feature_Test_Dockipass(unittest.TestCase):
         pids = find_process("background listen")
         self.assertEqual(len(pids), 0)
 
-        run(["docker", "run", "--name", "testcontainer", "-p", "8081:80", "-d", "nginxdemos/hello"], shell=True, live=False, mute_error=True)
+        run(["docker", "run", "--name", "testcontainer", "-p",
+            "8081:80", "-d", "nginxdemos/hello"], shell=True, live=False)
         run(["./dockipass.py", "listen"], shell=True, live=False)
 
         pids = find_process("socat")
         self.assertEqual(len(pids), 1)
 
-        run(["./dockipass.py", "listen", "-b"], shell=True, live=False)
+        run(["./dockipass.py", "listen", "-b"],
+            shell=True, live=False, mute_error=True)
 
     def test_6delete(self):
         run(["./dockipass.py", "delete", vm_name], shell=True, live=False)

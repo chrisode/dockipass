@@ -1,7 +1,7 @@
 
-from lib.multipass import start, stop, restart, launch, launch_with_alias, delete
+from lib.multipass import start, stop, restart, launch, launch_with_alias, delete, modify_compose_alias
 import unittest
-from unittest.mock import patch, call
+from unittest.mock import patch, call, mock_open
 import os
 import sys
 currentdir = os.path.dirname(os.path.realpath(__file__))
@@ -37,7 +37,8 @@ class TestMultipass(unittest.TestCase):
 
         mock_run_cmd.assert_has_calls(calls)
 
-    def test_launch_with_alias(self, mock_run_cmd):
+    @patch("builtins.open", new_callable=mock_open, read_data="docker-compose -- awd")
+    def test_launch_with_alias(self, mock_mock_open, mock_run_cmd):
         launch_with_alias("test")
 
         calls = [
@@ -50,6 +51,11 @@ class TestMultipass(unittest.TestCase):
         ]
 
         mock_run_cmd.assert_has_calls(calls)
+        mock_file = mock_mock_open()
+        mock_mock_open.assert_called()
+        mock_file.read.assert_called()
+        mock_file.write.assert_called_once_with(
+            "docker-compose -- -f \"$(pwd)/docker-compose.yaml\" awd")
 
     def test_delete(self, mock_run_cmd):
         delete("test")
@@ -74,10 +80,11 @@ class TestMultipass(unittest.TestCase):
         mock_run_cmd.assert_has_calls(calls)
 
 
+@patch("builtins.open", new_callable=mock_open)
 @patch("lib.multipass.run_cmd")
 class TestLaunch(unittest.TestCase):
 
-    def test_with_default_name(self, mock_run_cmd):
+    def test_with_default_name(self, mock_run_cmd, mopen):
         launch()
 
         calls = [
@@ -88,7 +95,7 @@ class TestLaunch(unittest.TestCase):
 
         mock_run_cmd.assert_has_calls(calls)
 
-    def test_with_non_default_cpu(self, mock_run_cmd):
+    def test_with_non_default_cpu(self, mock_run_cmd, mopen):
         launch(cpu=4)
 
         calls = [
@@ -99,7 +106,7 @@ class TestLaunch(unittest.TestCase):
 
         mock_run_cmd.assert_has_calls(calls)
 
-    def test_with_more_memory(self, mock_run_cmd):
+    def test_with_more_memory(self, mock_run_cmd, mopen):
         launch(memory="4G")
 
         calls = [
@@ -110,7 +117,7 @@ class TestLaunch(unittest.TestCase):
 
         mock_run_cmd.assert_has_calls(calls)
 
-    def test_with_more_disk(self, mock_run_cmd):
+    def test_with_more_disk(self, mock_run_cmd, mopen):
         launch(disk="40G")
 
         calls = [
@@ -121,7 +128,7 @@ class TestLaunch(unittest.TestCase):
 
         mock_run_cmd.assert_has_calls(calls)
 
-    def test_with_another_config(self, mock_run_cmd):
+    def test_with_another_config(self, mock_run_cmd, mopen):
         launch(config="test")
 
         calls = [

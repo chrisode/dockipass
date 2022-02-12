@@ -1,3 +1,4 @@
+from pathlib import Path
 from .commander import run as run_cmd
 
 aliases = ["docker", "docker-compose"]
@@ -46,6 +47,34 @@ def remove_alias():
 def create_alias(name=DEFAULT_NAME):
     for alias in aliases:
         _run_multipass(["alias", f"{name}:{alias}", alias])
+
+    modify_compose_alias()
+
+
+def modify_compose_alias():
+    home = str(Path.home())
+    filepath = f"{home}/Library/Application Support/multipass/bin/docker-compose"
+
+    new_file = []
+    with open(filepath, "r") as file:
+        output = file.read()
+        for line in output.split("\n"):
+            find_compose = line.find("docker-compose -- ")
+            if find_compose == -1:
+                new_file.append(line)
+                continue
+
+            if line.find("-f") > 0:
+                return
+
+            llenght = find_compose + len("docker-compose -- ")
+            add_argument = "-f \"$(pwd)/docker-compose.yaml\" "
+            line = line[:llenght] + add_argument + line[llenght:]
+
+            new_file.append(line)
+
+    with open(filepath, "w") as file:
+        file.write("\n".join(new_file))
 
 
 def mount_users_folder(name=DEFAULT_NAME):

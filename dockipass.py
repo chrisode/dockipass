@@ -106,7 +106,7 @@ def __main__():
     if (check_for_background_task(sys.argv)):
         run_task_forever(sys.argv[2])
         return
-    
+
     CliBuilder().has(
         subcommand("start", help="start multipass", run=start).has(
             argument("name", required=False, type=str, default=DEFAULT_NAME),
