@@ -4,11 +4,15 @@ import os
 import signal
 
 
-def run(cmd: list, live=True, shell=False):
+def run(cmd: list, live=True, shell=False, mute_error=False):
     if shell == True:
         cmd = " ".join(cmd)
 
-    process = subprocess.Popen(cmd, shell=shell, stdout=subprocess.PIPE)
+    if mute_error == False:
+        process = subprocess.Popen(cmd, shell=shell, stdout=subprocess.PIPE)
+    else:
+        process = subprocess.Popen(
+            cmd, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
     if live == False:
         output = process.stdout.read().decode("utf-8")
@@ -23,7 +27,7 @@ def run(cmd: list, live=True, shell=False):
             print(output.decode("utf-8").strip())
 
     rc = process.poll()
-
+    process.communicate()
 
 def run_in_background(cmd: list, shell=False):
     if shell == True:
@@ -52,6 +56,6 @@ def kill_process(pid):
 def _get_pids_from_process_list(process_list: list):
     pids = list()
     for process in process_list:
-        pids.append(process.split(" ")[0])
+        pids.append(process.strip().split(" ")[0])
 
     return pids

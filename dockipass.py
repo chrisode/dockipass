@@ -86,6 +86,9 @@ def delete(name=DEFAULT_NAME, noalias=False):
         use_docker_context("default")
         remove_docker_context(name)
 
+    stop_task_in_background("listen")
+    bind_local(cleanup=True)
+
     delete_multipass(name, noalias)
 
 
@@ -124,8 +127,8 @@ def __main__():
             parameter("memory", "m", type=str, default="2G"),
             parameter("cpu", "c", type=int, default=2),
             parameter("disk", "d", type=str, default="20G"),
-            flag("noalias", "n"),
-            flag("nobind", "n")
+            flag("noalias"),
+            flag("nobind")
         ),
         subcommand("listen", help="Bind forwarded docker ports to localhost", run=bind_local).has(
             flag("cleanup", "c"),

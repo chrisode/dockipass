@@ -17,4 +17,5 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 test = "scripts:test"
-testverbose = "scripts:testverbose"
+test-verbose = "scripts:test_verbose"
+test-features = "scripts:test_features"
