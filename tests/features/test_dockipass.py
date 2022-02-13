@@ -7,6 +7,7 @@ from pathlib import Path
 from lib.commander import run, find_process, kill_process
 from lib.multipass import aliases, modify_compose_alias
 from tests.test_helpers.common import backup_forwared, restore_forwarded
+import subprocess
 
 currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
@@ -59,7 +60,6 @@ def remove_alias():
 
 class Feature_Test_Dockipass(unittest.TestCase):
 
-    # Setup and teardown that handles preserving current state
     @classmethod
     def tearDownClass(self):
         restore_forwarded()
@@ -73,10 +73,6 @@ class Feature_Test_Dockipass(unittest.TestCase):
     def setUpClass(self):
         backup_forwared()
         remove_alias()
-
-    def test_fun_test(self):
-        with open("forwared_ports.json", "w+") as file:
-            file.write("{}")
 
     def test_1launch(self):
 
@@ -157,7 +153,12 @@ class Feature_Test_Dockipass(unittest.TestCase):
         run(["./dockipass.py", "listen", "-b"],
             shell=True, live=False, mute_error=True)
 
-    def test_6delete(self):
+    def test_6dockercompose(self):
+        process = subprocess.run(["docker-compose", "ps"], cwd=f"{parentdir}/data", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.assertEqual(process.stderr.decode("utf-8"), "")
+        self.assertNotEqual(process.stdout.decode("utf-8"), "")
+
+    def test_7delete(self):
         run(["./dockipass.py", "delete", vm_name], shell=True, live=False)
 
         # Stopped background process
