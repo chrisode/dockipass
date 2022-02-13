@@ -2,7 +2,7 @@
 
 Dockipass is a simple python script to start an Ubuntu VM using [multipass](https://multipass.run/) and running docker inside it.
 
-It will let you launch a new VM and install docker inside and mount `/Users` in it. It will also create aliases to docker and docker-compose which will allow you to work with these without installing them locally on your machine. In case you want to have docker locally and use `docker context` to manage your connections, it can  setup a `docker context` for you instead of installing the aliases. 
+It will let you launch a new VM and install docker inside and mount `/Users` in it. It will also create aliases to docker and docker-compose which will allow you to work with these without installing them locally on your machine.
 
 ## Setup
 You need multipass and python3 installed.<br>
@@ -13,8 +13,6 @@ You need multipass and python3 installed.<br>
 
 Install dependecies with [Poetry](https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions) <br>
 `poetry install`
-
-If you decide to use `docker context` will you also need to have a default public ssh key setup in `~/.ssh/id_rsa.pub`.
 
 You can then run `./dockipass.py launch` and it will setup, create and launch the virtual machine for you.
 
