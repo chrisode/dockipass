@@ -9,7 +9,7 @@ sys.path.append(parentdir)
 
 
 @patch("lib.multipass.run_cmd")
-class TestLaunchDockipass(unittest.TestCase):
+class TestDockipass(unittest.TestCase):
 
     @patch("builtins.print")
     @patch("dockipass.bind_local")
@@ -17,38 +17,16 @@ class TestLaunchDockipass(unittest.TestCase):
 
         launch("test")
         calls = [
-            call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "20G", "-n", "test-alias",
+            call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "20G", "-n", "test",
                  "20.04", "--cloud-init", f"\"cloud-init-config/alias.yaml\""], shell=True),
-            call(["multipass", "mount", "/Users/", "test-alias"], shell=False),
-            call(["multipass", "alias", "test-alias:docker", "docker"], shell=False),
-            call(["multipass", "alias", "test-alias:docker-compose",
+            call(["multipass", "mount", "/Users/", "test"], shell=False),
+            call(["multipass", "alias", "test:docker", "docker"], shell=False),
+            call(["multipass", "alias", "test:docker-compose",
                  "docker-compose"], shell=False)
         ]
 
         mock_print.assert_called()
         mock_run_cmd.assert_has_calls(calls)
-
-        mock_bind_local.assert_called_with(background=True)
-
-    @patch("dockipass.setup")
-    @patch("dockipass.run_cmd")
-    @patch("dockipass.bind_local")
-    def test_launch_with_noalias(self, mock_bind_local, mock_run_cmd2, mock_setup, mock_run_cmd):
-        launch("test", noalias=True)
-
-        mock_setup.assert_called_with("test")
-
-        mock_run_cmd.assert_has_calls([
-            call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "20G", "-n", "test",
-                 "20.04", "--cloud-init", f"\"cloud-init-config/test.yaml\""], shell=True),
-            call(["multipass", "mount", "/Users/", "test"], shell=False),
-        ])
-
-        mock_run_cmd2.assert_has_calls([
-            call(
-                ["docker", "context", "create", "dockipass", "--docker", "\"host=ssh://ubuntu@dockipass.local\""]),
-            call(["docker", "context", "use", "dockipass"])
-        ])
 
         mock_bind_local.assert_called_with(background=True)
 
@@ -69,7 +47,6 @@ class TestLaunchDockipass(unittest.TestCase):
 
         mock_bind_local.assert_not_called()
 
-
     @patch("dockipass.bind_local")
     @patch("dockipass.stop_task_in_background")
     @patch("dockipass.stop_multipass")
@@ -80,42 +57,23 @@ class TestLaunchDockipass(unittest.TestCase):
         mock_stop_task.assert_called_with("listen")
         mock_bind_local.assert_called_with(cleanup=True)
 
-
-@patch("lib.multipass.run_cmd")
-class TestDeleteDockipass(unittest.TestCase):
-    def test_delete_with_alias(self, mock_run_cmd):
+    def test_delete(self, mock_run_cmd):
 
         delete("test")
 
         calls = [
             call(["multipass", "unalias", "docker"], shell=False),
             call(["multipass", "unalias", "docker-compose"], shell=False),
-            call(["multipass", "delete", "test-alias"], shell=False),
+            call(["multipass", "delete", "test"], shell=False),
             call(["multipass", "purge"], shell=False)
         ]
 
         mock_run_cmd.assert_has_calls(calls)
 
-    @patch("dockipass.run_cmd")
-    def test_delete_with_noalias(self, mock_run_cmd2, mock_run_cmd):
-
-        delete("test", noalias=True)
-
-        mock_run_cmd.assert_has_calls([
-            call(["multipass", "delete", "test"], shell=False),
-            call(["multipass", "purge"], shell=False)
-        ])
-
-        mock_run_cmd2.assert_has_calls([
-            call(["docker", "context", "use", "default"]),
-            call(["docker", "context", "rm", "test"])
-        ])
-
-
-class TestDockipass(unittest.TestCase):
     @patch("builtins.print")
     @patch("dockipass.run_task_in_background")
-    def test_bind_local_in_background(self, mock_run_task_in_background, mock_print):
+    def test_bind_local_in_background(self, mock_run_task_in_background, mock_print, mock_run_cmd):
         bind_local(background=True)
         mock_run_task_in_background.assert_called_with("listen")
-        mock_print.assert_called_with("Started to listen for portchanges in the background and binding them to localhost")
+        mock_print.assert_called_with(
+            "Started to listen for portchanges in the background and binding them to localhost")

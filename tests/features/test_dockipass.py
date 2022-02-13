@@ -15,7 +15,6 @@ sys.path.append(parentdir)
 
 HOME = str(Path.home())
 vm_name = "feature-test"
-vm_name_alias = f"{vm_name}-alias"
 
 
 def list_vm():
@@ -31,7 +30,7 @@ def find_vm(name):
 
 
 def vm_info():
-    vm = run(["multipass", "info", vm_name_alias,
+    vm = run(["multipass", "info", vm_name,
              "--format", "json"], live=False, shell=True)
     return json.loads(vm)
 
@@ -43,7 +42,7 @@ def kill_background_listen():
 
 
 def restore_alias():
-    name = "dockipass-alias"
+    name = "dockipass"
     if find_vm(name):
         for alias in aliases:
             run(["multipass", "alias",
@@ -52,7 +51,7 @@ def restore_alias():
 
 
 def remove_alias():
-    name = "dockipass-alias"
+    name = "dockipass"
     if find_vm(name):
         for alias in aliases:
             run(["multipass", "unalias", alias])
@@ -64,8 +63,7 @@ class Feature_Test_Dockipass(unittest.TestCase):
     def tearDownClass(self):
         restore_forwarded()
         kill_background_listen()
-        run(["multipass", "delete",
-            f"{vm_name}-alias"], live=False, mute_error=True)
+        run(["multipass", "delete", vm_name], live=False, mute_error=True)
         run(["multipass", "purge"], live=False, mute_error=True)
         restore_alias()
 
@@ -82,9 +80,9 @@ class Feature_Test_Dockipass(unittest.TestCase):
         info = vm_info()
 
         self.assertEqual(len(info["errors"]), 0)
-        self.assertIn(vm_name_alias, info["info"])
+        self.assertIn(vm_name, info["info"])
 
-        info = info["info"][vm_name_alias]
+        info = info["info"][vm_name]
 
         self.assertEqual(info["state"], "Running")
         self.assertEqual(info["image_release"], "20.04 LTS")
@@ -106,10 +104,10 @@ class Feature_Test_Dockipass(unittest.TestCase):
         self.assertEqual(len(pids), 1)
 
     def test_1stop(self):
-        run(["./dockipass.py", "stop", vm_name_alias], shell=True, live=False)
+        run(["./dockipass.py", "stop", vm_name], shell=True, live=False)
 
         # The containter have been stopped
-        info = vm_info()["info"][vm_name_alias]
+        info = vm_info()["info"][vm_name]
         self.assertEqual(info["state"], "Stopped")
 
         # Check for bind removed
@@ -117,10 +115,10 @@ class Feature_Test_Dockipass(unittest.TestCase):
         self.assertEqual(len(pids), 0)
 
     def test_2start(self):
-        run(["./dockipass.py", "start", vm_name_alias], shell=False, live=False)
+        run(["./dockipass.py", "start", vm_name], shell=False, live=False)
 
         # The containter is running
-        info = vm_info()["info"][vm_name_alias]
+        info = vm_info()["info"][vm_name]
         self.assertEqual(info["state"], "Running")
 
         # Check for bind removed
@@ -128,10 +126,10 @@ class Feature_Test_Dockipass(unittest.TestCase):
         self.assertEqual(len(pids), 1)
 
     def test_4restart(self):
-        run(["./dockipass.py", "restart", vm_name_alias], shell=True, live=False)
+        run(["./dockipass.py", "restart", vm_name], shell=True, live=False)
 
         # The containter is running
-        info = vm_info()["info"][vm_name_alias]
+        info = vm_info()["info"][vm_name]
         self.assertEqual(info["state"], "Running")
 
         # Check for bind
@@ -154,7 +152,8 @@ class Feature_Test_Dockipass(unittest.TestCase):
             shell=True, live=False, mute_error=True)
 
     def test_6dockercompose(self):
-        process = subprocess.run(["docker-compose", "ps"], cwd=f"{parentdir}/data", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.run(
+            ["docker-compose", "ps"], cwd=f"{parentdir}/data", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.assertEqual(process.stderr.decode("utf-8"), "")
         self.assertNotEqual(process.stdout.decode("utf-8"), "")
 
@@ -172,4 +171,4 @@ class Feature_Test_Dockipass(unittest.TestCase):
         # VM no longer exists
         list = list_vm()["list"]
         for vm in list:
-            self.assertNotIn(vm_name_alias, vm["name"])
+            self.assertNotIn(vm_name, vm["name"])
