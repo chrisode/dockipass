@@ -91,7 +91,8 @@ def stop_forward(port):
 
 
 def forward(port):
-    pid = run_in_background(["socat", f"\"tcp-listen:{port},bind=localhost,reuseaddr,fork\"", f"\"tcp:dockipass-alias.local:{port}\""], shell=True)
+    # Todo fix so name is not statically set for the address to forward to
+    pid = run_in_background(["socat", f"\"tcp-listen:{port},bind=localhost,reuseaddr,fork\"", f"\"tcp:dockipass.local:{port}\""], shell=True)
     add_forwared_port(port, pid)
     log(f"Forwarded port: {port}, socat running with pid: {pid}")
 
