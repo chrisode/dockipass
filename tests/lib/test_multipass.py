@@ -26,7 +26,7 @@ class TestMultipass(unittest.TestCase):
         mock_run_cmd.assert_called_with(
             ["multipass", "stop", "test"], shell=False)
 
-    @patch("builtins.open", new_callable=mock_open, read_data="docker-compose -- awd")
+    @patch("builtins.open", new_callable=mock_open, read_data="#!/bin/sh\n\ndocker-compose -- awd")
     def test_launch(self, mock_mock_open, mock_run_cmd):
         launch("test")
 
@@ -44,7 +44,7 @@ class TestMultipass(unittest.TestCase):
         mock_mock_open.assert_called()
         mock_file.read.assert_called()
         mock_file.write.assert_called_once_with(
-            "docker-compose -- -f \"$(pwd)/docker-compose.yaml\" awd")
+            '#!/bin/sh\n\narguments=""\nf_arg=""\n\nfor (( i=1; i <= "$#"; i++ )); do\n    arg=${!i}\n    arguments+=" $arg"\n    if [[ $arg = "-f" ]]; then\n        i=$((i+1))\n        f_arg=${!i}\n        if [[ "$f_arg" == *"/Users"* ]]; then\n            arguments+=" $f_arg"\n        else\n            arguments+=" $(pwd)/$f_arg"\n        fi\n    fi    \ndone\n\nif [[ -z $f_arg ]]; then\n    f_arg="$(pwd)/docker-compose.yml"\n    if [[ -f $f_arg ]]; then\n        arguments="-f "$f_arg$arguments\n    else\n        arguments="-f $(pwd)/docker-compose.yaml"$arguments\n    fi\nfi\n    \n\ndocker-compose -- $arguments')
 
     def test_delete(self, mock_run_cmd):
         delete("test")

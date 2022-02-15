@@ -50,23 +50,59 @@ def modify_compose_alias():
     new_file = []
     with open(filepath, "r") as file:
         output = file.read()
+
+        if output.find("$arguments") > -1:
+            return
+
         for line in output.split("\n"):
-            find_compose = line.find("docker-compose -- ")
-            if find_compose == -1:
+            find_hashbang = line.find("#!")
+            if find_hashbang > -1:
                 new_file.append(line)
+                new_file.append(bash_for_compose_file())
                 continue
 
-            if line.find("-f") > 0:
-                return
+            find_compose = line.find("docker-compose -- ")
+            if find_compose > -1:
+                insert_at = find_compose + len("docker-compose -- ")
+                line = line[:insert_at] + "$arguments"
 
-            llenght = find_compose + len("docker-compose -- ")
-            add_argument = "-f \"$(pwd)/docker-compose.yaml\" "
-            line = line[:llenght] + add_argument + line[llenght:]
+                new_file.append(line)
+                continue
 
             new_file.append(line)
 
     with open(filepath, "w") as file:
         file.write("\n".join(new_file))
+
+
+def bash_for_compose_file():
+    return """
+arguments=""
+f_arg=""
+
+for (( i=1; i <= "$#"; i++ )); do
+    arg=${!i}
+    arguments+=" $arg"
+    if [[ $arg = "-f" ]]; then
+        i=$((i+1))
+        f_arg=${!i}
+        if [[ "$f_arg" == *"/Users"* ]]; then
+            arguments+=" $f_arg"
+        else
+            arguments+=" $(pwd)/$f_arg"
+        fi
+    fi    
+done
+
+if [[ -z $f_arg ]]; then
+    f_arg="$(pwd)/docker-compose.yml"
+    if [[ -f $f_arg ]]; then
+        arguments="-f "$f_arg$arguments
+    else
+        arguments="-f $(pwd)/docker-compose.yaml"$arguments
+    fi
+fi
+    """
 
 
 def mount_users_folder(name=DEFAULT_NAME):

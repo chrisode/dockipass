@@ -97,7 +97,7 @@ class Feature_Test_Dockipass(unittest.TestCase):
         with open(f"{HOME}/Library/Application Support/multipass/bin/docker-compose", "r") as file:
             output = file.read()
             self.assertIn(
-                '"/Library/Application Support/com.canonical.multipass/bin/multipass" docker-compose -- -f "$(pwd)/docker-compose.yaml" "${@}"', output.split("\n"))
+                '"/Library/Application Support/com.canonical.multipass/bin/multipass" docker-compose -- $arguments', output.split("\n"))
 
         # Check for bind
         pids = find_process("background listen")
