@@ -7,7 +7,7 @@ def test():
     `poetry run python3 -u -m unittest discover`
     """
     subprocess.run(
-        ["python3", "-u", "-m" "unittest", "discover"]
+        ["python3", "-u", "-m" "unittest", "discover", "-f"]
     )
 
 def test_verbose():
@@ -16,7 +16,7 @@ def test_verbose():
     `poetry run python -u -m unittest discover -v`
     """
     subprocess.run(
-        ["python3", "-u", "-m" "unittest", "discover", "-v"]
+        ["python3", "-u", "-m" "unittest", "discover", "-vf"]
     )
 
 def test_features():
@@ -25,5 +25,5 @@ def test_features():
     `poetry run python3 -u -m unittest discover -v`
     """
     subprocess.run(
-        ["python3", "-u", "-m" "unittest", "discover", "-s", "tests/features", "-v"]
+        ["python3", "-u", "-m" "unittest", "discover", "-s", "tests/features", "-vf"]
     )

@@ -32,6 +32,8 @@ def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, nobind=False):
     print(
         f"To use Docker and compose from your terminal add multipass to your path: \"PATH={HOME}/Library/Application Support/multipass/bin:$PATH\"")
     
+    start_multipass(name)
+
     if nobind == False:
         bind_local(background=True)
 

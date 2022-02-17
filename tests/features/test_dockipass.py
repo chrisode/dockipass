@@ -16,6 +16,10 @@ sys.path.append(parentdir)
 HOME = str(Path.home())
 vm_name = "feature-test"
 
+multipass_bin_path = f"{HOME}/Library/Application Support/multipass/bin"
+docker_cmd = f"{multipass_bin_path}/docker"
+docker_compose_cmd = f"{multipass_bin_path}/docker-compose"
+
 
 def list_vm():
     vm = run(["multipass", "list", "--format", "json"], live=False, shell=True)
@@ -89,12 +93,11 @@ class Feature_Test_Dockipass(unittest.TestCase):
         self.assertIn("/Users", info["mounts"])
 
         # Aliases should have been setup for docker and docker-compose
-        aliases = os.listdir(
-            f"{HOME}/Library/Application Support/multipass/bin")
+        aliases = os.listdir(multipass_bin_path)
         self.assertListEqual(aliases, ["docker", "docker-compose"])
 
         # Docker compose alias should have file added to it
-        with open(f"{HOME}/Library/Application Support/multipass/bin/docker-compose", "r") as file:
+        with open(docker_compose_cmd, "r") as file:
             output = file.read()
             self.assertIn(
                 '"/Library/Application Support/com.canonical.multipass/bin/multipass" docker-compose -- $arguments', output.split("\n"))
@@ -141,23 +144,30 @@ class Feature_Test_Dockipass(unittest.TestCase):
         pids = find_process("background listen")
         self.assertEqual(len(pids), 0)
 
-        run(["docker", "run", "--name", "testcontainer", "-p",
-            "8081:80", "-d", "nginxdemos/hello"], shell=True, live=False)
-        run(["./dockipass.py", "listen"], shell=True, live=False)
+        subprocess.run([docker_cmd, "run", "--name", "testcontainer", "-p",
+                        "8081:80", "-d", "nginxdemos/hello"], stdout=subprocess.PIPE)
+
+        subprocess.run(["./dockipass.py", "listen"])
 
         pids = find_process("socat")
         self.assertEqual(len(pids), 1)
 
-        run(["./dockipass.py", "listen", "-b"],
-            shell=True, live=False, mute_error=True)
+        subprocess.run(["./dockipass.py", "listen", "-b"])
 
     def test_6dockercompose(self):
         process = subprocess.run(
-            ["docker-compose", "ps"], cwd=f"{parentdir}/data", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            [docker_compose_cmd, "ps"], cwd=f"{parentdir}/data", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.assertEqual(process.stderr.decode("utf-8"), "")
         self.assertNotEqual(process.stdout.decode("utf-8"), "")
 
-    def test_7delete(self):
+    def test_7dockerbuildx(self):
+        process = subprocess.run(
+            [docker_cmd, "buildx"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.assertEqual(process.stderr.decode("utf-8"), "")
+        self.assertIn("Usage:  docker buildx [OPTIONS] COMMAND", process.stdout.decode(
+            "utf-8").split("\n"))
+
+    def test_8delete(self):
         run(["./dockipass.py", "delete", vm_name], shell=True, live=False)
 
         # Stopped background process
