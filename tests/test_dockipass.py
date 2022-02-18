@@ -8,12 +8,13 @@ parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
 
-@patch("lib.multipass.run_cmd")
+@patch("lib.multipass.run_cmd", return_value=True)
 class TestDockipass(unittest.TestCase):
 
     @patch("builtins.print")
     @patch("dockipass.bind_local")
-    def test_launch_with_alias(self, mock_bind_local, mock_print, mock_run_cmd):
+    @patch("lib.multipass.modify_compose_alias")
+    def test_launch_with_alias(self, mock_alias_compose, mock_bind_local, mock_print, mock_run_cmd):
 
         launch("test")
         calls = [

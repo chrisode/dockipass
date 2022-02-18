@@ -1,40 +1,73 @@
 import re
-import subprocess
 import os
 import signal
+from time import sleep
+
+from sarge import run as sarge_run, Capture
 
 
-def run(cmd: list, live=True, shell=False, mute_error=False):
+def run(cmd, live=True, shell=False):
     if shell == True:
         cmd = " ".join(cmd)
 
-    if mute_error == False:
-        process = subprocess.Popen(cmd, shell=shell, stdout=subprocess.PIPE)
-    else:
-        process = subprocess.Popen(
-            cmd, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    process = sarge_run(cmd, stdout=Capture(), stderr=Capture(), shell=shell)
 
     if live == False:
-        output = process.stdout.read().decode("utf-8")
-        process.communicate()
-        return output
+        return runner(process)
+    else:
+        return run_live(process)
 
+
+def runner(process):
+    if (check_process(process) == False):
+        print(read(process.stderr))
+        return False
+
+    return read(process.stdout)
+
+
+def run_live(process):
     while True:
-        output = process.stdout.readline()
-        if output == b'' and process.poll() is not None:
-            break
-        if output:
-            print(output.decode("utf-8").strip())
+        if (check_process(process) == False):
+            print(readline(process.stderr))
+            return False
 
-    rc = process.poll()
-    process.communicate()
+        output = readline(process.stdout)
+        if output == "":
+            break
+
+        print(output)
+
+    process.wait()
+
+
+def check_process(process):
+    exit_code = process.poll_last()
+    if exit_code == None:
+        return None
+
+    if exit_code == 0:
+        return True
+
+    return False
+
+
+def read(pipe):
+    return pipe.read().decode("utf-8").strip()
+
+
+def readline(pipe):
+    return pipe.readline().decode("utf-8").strip()
+
 
 def run_in_background(cmd: list, shell=False):
     if shell == True:
         cmd = " ".join(cmd)
 
-    process = subprocess.Popen(cmd, shell=shell, stdout=subprocess.PIPE)
-    return process.pid
+    process = sarge_run(cmd, stdout=Capture(), stderr=Capture(), shell=shell, async_=True)
+    # _async returns faster than the process can return, so we need to wait a few milliseconds
+    sleep(0.1)
+    return process.commands[0].process.pid
 
 
 def find_process(process):

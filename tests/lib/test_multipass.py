@@ -9,7 +9,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
 
-@patch("lib.multipass.run_cmd")
+@patch("lib.multipass.run_cmd", return_value=True)
 class TestMultipass(unittest.TestCase):
     def test_start(self, mock_run_cmd):
         start("test")
@@ -60,7 +60,7 @@ class TestMultipass(unittest.TestCase):
 
 
 @patch("builtins.open", new_callable=mock_open)
-@patch("lib.multipass.run_cmd")
+@patch("lib.multipass.run_cmd", return_value=True)
 class TestLaunch(unittest.TestCase):
 
     def test_with_default_name(self, mock_run_cmd, mopen):

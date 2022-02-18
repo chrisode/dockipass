@@ -27,7 +27,12 @@ def use_docker_context(name=DEFAULT_NAME):
 
 
 def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, nobind=False): 
-    launch_multipass(name, memory, disk, cpu)
+    launched = launch_multipass(name, memory, disk, cpu)
+
+    if (launched == False):
+        print("Failed to launch Multipass")
+        return
+
     print("Docker have now been setup and aliased")
     print(
         f"To use Docker and compose from your terminal add multipass to your path: \"PATH={HOME}/Library/Application Support/multipass/bin:$PATH\"")

@@ -25,8 +25,12 @@ def delete(name=DEFAULT_NAME):
 
 
 def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2):
-    _run_multipass(["launch", "-c", str(cpu), "-m", memory, "-d", disk, "-n",
+    lauched = _run_multipass(["launch", "-c", str(cpu), "-m", memory, "-d", disk, "-n",
                    name, "20.04", "--cloud-init", f"\"cloud-init-config/alias.yaml\""], shell=True)
+    
+    if lauched == False:
+        return False
+    
     mount_users_folder(name)
     create_alias(name)
 
@@ -111,4 +115,4 @@ def mount_users_folder(name=DEFAULT_NAME):
 
 def _run_multipass(cmd: list, shell=False):
     cmd.insert(0, "multipass")
-    run_cmd(cmd, shell=shell)
+    return run_cmd(cmd, shell=shell)
