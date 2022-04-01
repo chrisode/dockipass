@@ -8,10 +8,11 @@ from lib.commander import run as run_cmd
 from lib.multipass import start as start_multipass, stop as stop_multipass, restart, delete as delete_multipass, launch as launch_multipass
 from lib.bind_local import bind_local as _bind_local
 from lib.background_task import check_for_background_task, run_task_forever, run_task_in_background, stop_task_in_background
+from lib.config import DEFAULT_NAME
 
 
-DEFAULT_NAME = "dockipass"
 HOME = str(Path.home())
+
 
 def add_docker_context(name=DEFAULT_NAME):
     run_cmd(["docker", "context", "create", name, "--docker",
@@ -26,7 +27,7 @@ def use_docker_context(name=DEFAULT_NAME):
     run_cmd(["docker", "context", "use", name])
 
 
-def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, nobind=False): 
+def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, nobind=False):
     launched = launch_multipass(name, memory, disk, cpu)
 
     if (launched == False):
@@ -35,8 +36,8 @@ def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, nobind=False):
 
     print("Docker have now been setup and aliased")
     print(
-        f"To use Docker and compose from your terminal add multipass to your path: \"PATH={HOME}/Library/Application Support/multipass/bin:$PATH\"")
-    
+        f"To use Docker and compose from your terminal add multipass to your path: PATH=\"{HOME}/Library/Application Support/multipass/bin\":$PATH")
+
     start_multipass(name)
 
     if nobind == False:
@@ -63,13 +64,13 @@ def delete(name=DEFAULT_NAME):
     delete_multipass(name)
 
 
-def bind_local(cleanup=False, verbose=False, background=False):
+def bind_local(name=DEFAULT_NAME, cleanup=False, verbose=False, background=False):
     if background == True:
         run_task_in_background("listen")
         print("Started to listen for portchanges in the background and binding them to localhost")
         return
 
-    _bind_local(cleanup, verbose)
+    _bind_local(name, cleanup, verbose)
 
 
 def __main__():
@@ -100,6 +101,7 @@ def __main__():
             flag("nobind", "n")
         ),
         subcommand("listen", help="Bind forwarded docker ports to localhost", run=bind_local).has(
+            argument("name", required=False, type=str, default=DEFAULT_NAME),
             flag("cleanup", "c"),
             flag("background", "b"),
             flag("verbose", "v")

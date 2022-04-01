@@ -110,79 +110,79 @@ class Feature_Test_Dockipass(unittest.TestCase):
         pids = find_process("background listen")
         self.assertEqual(len(pids), 1)
 
-    # def test_1stop(self):
-    #     run(["./dockipass.py", "stop", vm_name])
+    def test_1stop(self):
+        run(["./dockipass.py", "stop", vm_name])
 
-    #     # The containter have been stopped
-    #     info = vm_info()["info"][vm_name]
-    #     self.assertEqual(info["state"], "Stopped")
+        # The containter have been stopped
+        info = vm_info()["info"][vm_name]
+        self.assertEqual(info["state"], "Stopped")
 
-    #     # Check for bind removed
-    #     pids = find_process("background listen")
-    #     self.assertEqual(len(pids), 0)
+        # Check for bind removed
+        pids = find_process("background listen")
+        self.assertEqual(len(pids), 0)
 
-    # def test_2start(self):
-    #     run(["./dockipass.py", "start", vm_name], shell=False, )
+    def test_2start(self):
+        run(["./dockipass.py", "start", vm_name])
 
-    #     # The containter is running
-    #     info = vm_info()["info"][vm_name]
-    #     self.assertEqual(info["state"], "Running")
+        # The containter is running
+        info = vm_info()["info"][vm_name]
+        self.assertEqual(info["state"], "Running")
 
-    #     # Check for bind removed
-    #     pids = find_process("background listen")
-    #     self.assertEqual(len(pids), 1)
+        # Check for bind removed
+        pids = find_process("background listen")
+        self.assertEqual(len(pids), 1)
 
-    # def test_4restart(self):
-    #     run(["./dockipass.py", "restart", vm_name])
+    def test_4restart(self):
+        run(["./dockipass.py", "restart", vm_name])
 
-    #     # The containter is running
-    #     info = vm_info()["info"][vm_name]
-    #     self.assertEqual(info["state"], "Running")
+        # The containter is running
+        info = vm_info()["info"][vm_name]
+        self.assertEqual(info["state"], "Running")
 
-    #     # Check for bind
-    #     pids = find_process("background listen")
-    #     self.assertEqual(len(pids), 1)
+        # Check for bind
+        pids = find_process("background listen")
+        self.assertEqual(len(pids), 1)
 
-    # def test_5listen(self):
-    #     kill_background_listen()
-    #     pids = find_process("background listen")
-    #     self.assertEqual(len(pids), 0)
+    def test_5listen(self):
+        kill_background_listen()
+        pids = find_process("background listen")
+        self.assertEqual(len(pids), 0)
 
-    #     subprocess.run([docker_cmd, "run", "--name", "testcontainer", "-p",
-    #                     "8081:80", "-d", "nginxdemos/hello"], stdout=subprocess.PIPE)
+        subprocess.run([docker_cmd, "run", "--name", "testcontainer", "-p",
+                        "8081:80", "-d", "nginxdemos/hello"], stdout=subprocess.PIPE)
 
-    #     subprocess.run(["./dockipass.py", "listen"])
+        subprocess.run(["./dockipass.py", "listen"])
 
-    #     pids = find_process("socat")
-    #     self.assertEqual(len(pids), 1)
+        pids = find_process("socat")
+        self.assertEqual(len(pids), 1)
 
-    #     subprocess.run(["./dockipass.py", "listen", "-b"])
+        subprocess.run(["./dockipass.py", "listen", "-b"])
 
-    # def test_6dockercompose(self):
-    #     process = subprocess.run(
-    #         [docker_compose_cmd, "ps"], cwd=f"{parentdir}/data", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    #     self.assertEqual(process.stderr.decode("utf-8"), "")
-    #     self.assertNotEqual(process.stdout.decode("utf-8"), "")
+    def test_6dockercompose(self):
+        process = subprocess.run(
+            [docker_compose_cmd, "ps"], cwd=f"{parentdir}/data", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.assertEqual(process.stderr.decode("utf-8"), "")
+        self.assertNotEqual(process.stdout.decode("utf-8"), "")
 
-    # def test_7dockerbuildx(self):
-    #     process = subprocess.run(
-    #         [docker_cmd, "buildx"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    #     self.assertEqual(process.stderr.decode("utf-8"), "")
-    #     self.assertIn("Usage:  docker buildx [OPTIONS] COMMAND", process.stdout.decode(
-    #         "utf-8").split("\n"))
+    def test_7dockerbuildx(self):
+        process = subprocess.run(
+            [docker_cmd, "buildx"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.assertEqual(process.stderr.decode("utf-8"), "")
+        self.assertIn("Usage:  docker buildx [OPTIONS] COMMAND", process.stdout.decode(
+            "utf-8").split("\n"))
 
-    # def test_8delete(self):
-    #     run(["./dockipass.py", "delete", vm_name])
+    def test_8delete(self):
+        run(["./dockipass.py", "delete", vm_name])
 
-    #     # Stopped background process
-    #     pids = find_process("background listen")
-    #     self.assertEqual(len(pids), 0)
+        # Stopped background process
+        pids = find_process("background listen")
+        self.assertEqual(len(pids), 0)
 
-    #     # Stopped all socat processes
-    #     pids = find_process("socat")
-    #     self.assertEqual(len(pids), 0)
+        # Stopped all socat processes
+        pids = find_process("socat")
+        self.assertEqual(len(pids), 0)
 
-    #     # VM no longer exists
-    #     list = list_vm()["list"]
-    #     for vm in list:
-    #         self.assertNotIn(vm_name, vm["name"])
+        # VM no longer exists
+        list = list_vm()["list"]
+        for vm in list:
+            self.assertNotIn(vm_name, vm["name"])

@@ -1,4 +1,5 @@
 from lib.bind_local import bind_local, get_docker_ports, forward, add_forwared_port, get_forwared_ports, unbind_all
+from lib.config import DEFAULT_NAME
 import unittest
 from unittest.mock import patch
 import os
@@ -102,7 +103,7 @@ class TestBindLocal(unittest.TestCase):
         mock_ports.assert_called()
 
         # It should forward the port
-        mock_forward.assert_called_with("8080")
+        mock_forward.assert_called_with("8080", name=DEFAULT_NAME)
 
         # It should not have killed any process
         mock_kill.assert_not_called()
@@ -174,3 +175,12 @@ class TestBindLocal(unittest.TestCase):
         unbind_all()
         mock_run.assert_called_with(["ps", "ax"], live=False)
         mock_kill.assert_called_with(11)
+
+    @patch("lib.bind_local.run_in_background", return_value="1")
+    @patch("lib.bind_local.get_docker_ports", return_value=["8080"])
+    def test_bind_local_run_called_with_name(self, mock_ports, mock_run):
+        bind_local(name="kaka")
+        mock_run.assert_called()
+        called_with = " ".join(mock_run.call_args[0][0])
+        self.assertTrue(called_with.find("kaka") > -1)
+

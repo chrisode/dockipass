@@ -64,18 +64,21 @@ def run_in_background(cmd: list, shell=False):
     if shell == True:
         cmd = " ".join(cmd)
 
-    process = sarge_run(cmd, stdout=Capture(), stderr=Capture(), shell=shell, async_=True)
+    process = sarge_run(cmd, stdout=Capture(),
+                        stderr=Capture(), shell=shell, async_=True)
     # _async returns faster than the process can return, so we need to wait a few milliseconds
     sleep(0.1)
     return process.commands[0].process.pid
 
 
 def find_process(process):
+    processes = search_for_process(process)
+    return _get_pids_from_process_list(processes)
+
+
+def search_for_process(process):
     processes = run(["ps", "ax"], live=False)
-
-    found_processes = re.findall(f"^.*{process}.*$", processes, re.MULTILINE)
-
-    return _get_pids_from_process_list(found_processes)
+    return re.findall(f"^.*{process}.*$", processes, re.MULTILINE)
 
 
 def kill_process(pid):
