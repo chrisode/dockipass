@@ -1,0 +1,23 @@
+---
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+packages:
+  - avahi-daemon
+  - net-tools
+
+groups:
+  docker
+
+system_info:
+  default_user:
+    groups: [docker]
+
+runcmd:
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=arm64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get -y update
+  - sudo apt-get -y install docker docker-compose
+  - curl -L --create-dirs https://github.com/docker/buildx/releases/download/v0.8.1/buildx-v0.8.1.linux-arm64 --output /home/ubuntu/.docker/cli-plugins/docker-buildx
+  - chown -R ubuntu:ubuntu /home/ubuntu/.docker
+  - chmod a+x /home/ubuntu/.docker/cli-plugins/docker-buildx

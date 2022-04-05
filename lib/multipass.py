@@ -1,6 +1,6 @@
 from pathlib import Path
 from .commander import run as run_cmd
-from .config import DEFAULT_NAME
+from .config import DEFAULT_NAME, ARCHITECTURE
 
 aliases = ["docker", "docker-compose"]
 
@@ -24,10 +24,10 @@ def delete(name=DEFAULT_NAME):
 
 
 def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2):
-    lauched = _run_multipass(["launch", "-c", str(cpu), "-m", memory, "-d", disk, "-n",
-                              name, "20.04", "--cloud-init", f"\"cloud-init-config/alias.yaml\""], shell=True)
+    launched = _run_multipass(["launch", "-c", str(cpu), "-m", memory, "-d", disk, "-n",
+                              name, "20.04", "--cloud-init", f"\"cloud-init-config/{ARCHITECTURE}.yaml\""], shell=True)
 
-    if lauched == False:
+    if launched == False:
         return False
 
     mount_users_folder(name)

@@ -14,12 +14,13 @@ class TestDockipass(unittest.TestCase):
     @patch("builtins.print")
     @patch("dockipass.bind_local")
     @patch("lib.multipass.modify_compose_alias")
+    @patch("lib.multipass.ARCHITECTURE", "amd64")
     def test_launch_with_alias(self, mock_alias_compose, mock_bind_local, mock_print, mock_run_cmd):
 
         launch("test")
         calls = [
             call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "20G", "-n", "test",
-                 "20.04", "--cloud-init", f"\"cloud-init-config/alias.yaml\""], shell=True),
+                 "20.04", "--cloud-init", f"\"cloud-init-config/amd64.yaml\""], shell=True),
             call(["multipass", "mount", "/Users/", "test"], shell=False),
             call(["multipass", "alias", "test:docker", "docker"], shell=False),
             call(["multipass", "alias", "test:docker-compose",

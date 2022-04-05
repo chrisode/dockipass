@@ -27,12 +27,13 @@ class TestMultipass(unittest.TestCase):
             ["multipass", "stop", "test"], shell=False)
 
     @patch("builtins.open", new_callable=mock_open, read_data="#!/bin/sh\n\ndocker-compose -- awd")
+    @patch("lib.multipass.ARCHITECTURE", "amd64")
     def test_launch(self, mock_mock_open, mock_run_cmd):
         launch("test")
 
         calls = [
             call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "20G", "-n",
-                 "test", "20.04", "--cloud-init", f"\"cloud-init-config/alias.yaml\""], shell=True),
+                 "test", "20.04", "--cloud-init", f"\"cloud-init-config/amd64.yaml\""], shell=True),
             call(["multipass", "mount", "/Users/", "test"], shell=False),
             call(["multipass", "alias", "test:docker", "docker"], shell=False),
             call(["multipass", "alias", "test:docker-compose",
@@ -58,7 +59,7 @@ class TestMultipass(unittest.TestCase):
 
         mock_run_cmd.assert_has_calls(calls)
 
-
+@patch("lib.multipass.ARCHITECTURE", "amd64")
 @patch("builtins.open", new_callable=mock_open)
 @patch("lib.multipass.run_cmd", return_value=True)
 class TestLaunch(unittest.TestCase):
@@ -68,7 +69,7 @@ class TestLaunch(unittest.TestCase):
 
         calls = [
             call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "20G", "-n",
-                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/alias.yaml\""], shell=True),
+                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/amd64.yaml\""], shell=True),
             call(["multipass", "mount", "/Users/", "dockipass"], shell=False),
             call(["multipass", "alias", "dockipass:docker", "docker"], shell=False),
             call(["multipass", "alias", "dockipass:docker-compose",
@@ -82,7 +83,7 @@ class TestLaunch(unittest.TestCase):
 
         calls = [
             call(["multipass", "launch", "-c", "4", "-m", "2G", "-d", "20G", "-n",
-                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/alias.yaml\""], shell=True),
+                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/amd64.yaml\""], shell=True),
             call(["multipass", "mount", "/Users/", "dockipass"], shell=False),
             call(["multipass", "alias", "dockipass:docker", "docker"], shell=False),
             call(["multipass", "alias", "dockipass:docker-compose",
@@ -96,7 +97,7 @@ class TestLaunch(unittest.TestCase):
 
         calls = [
             call(["multipass", "launch", "-c", "2", "-m", "4G", "-d", "20G", "-n",
-                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/alias.yaml\""], shell=True),
+                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/amd64.yaml\""], shell=True),
             call(["multipass", "mount", "/Users/", "dockipass"], shell=False),
             call(["multipass", "alias", "dockipass:docker", "docker"], shell=False),
             call(["multipass", "alias", "dockipass:docker-compose",
@@ -110,7 +111,7 @@ class TestLaunch(unittest.TestCase):
 
         calls = [
             call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "40G", "-n",
-                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/alias.yaml\""], shell=True),
+                 "dockipass", "20.04", "--cloud-init", f"\"cloud-init-config/amd64.yaml\""], shell=True),
             call(["multipass", "mount", "/Users/", "dockipass"], shell=False),
             call(["multipass", "alias", "dockipass:docker", "docker"], shell=False),
             call(["multipass", "alias", "dockipass:docker-compose",
