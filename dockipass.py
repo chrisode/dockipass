@@ -7,7 +7,7 @@ import sys
 from lib.commander import run as run_cmd
 from lib.multipass import start as start_multipass, stop as stop_multipass, restart, delete as delete_multipass, launch as launch_multipass
 from lib.bind_local import bind_local as _bind_local
-from lib.background_task import check_for_background_task, run_task_forever, run_task_in_background, stop_task_in_background
+from lib.background_task import check_for_background_task, run_task_forever, run_task_in_background, stop_task_in_background, stop_task_in_background
 from lib.config import DEFAULT_NAME, ARCHITECTURE
 
 
@@ -28,39 +28,49 @@ def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, nobind=False):
     start_multipass()
 
     if nobind == False:
-        bind_local(background=True)
+        bind_local()
 
 
 def start(nobind=False):
     start_multipass()
 
     if nobind == False:
-        bind_local(background=True)
+        bind_local()
 
 
 def stop():
     stop_task_in_background("listen")
-    bind_local(cleanup=True)
+    _bind_local(cleanup=True)
     stop_multipass()
 
 
 def delete():
     stop_task_in_background("listen")
-    bind_local(cleanup=True)
+    _bind_local(cleanup=True)
 
     delete_multipass()
 
 
-def bind_local(cleanup=False, verbose=False, background=False):
-    if background == True:
-        started = run_task_in_background("listen")
-        if started:
-            print("Started to listen for portchanges in the background and binding them to localhost")
-        else:
-            print("Already listening for ports in background, doing nothing")
-        return
+def bind_local(command="start"):
 
-    _bind_local(cleanup, verbose)
+    match command:
+        case "start":
+            started = run_task_in_background("listen")
+            if started:
+                print(
+                    "Started to listen for portchanges in the background and binding them to localhost")
+            else:
+                print("Already listening for ports in background, doing nothing")
+            return
+
+        case "stop":
+            stop_task_in_background("listen")
+            print("Stopped listening for portchanges")
+
+        case "cleanup":
+            print("Stopped listening for portchanges and cleaned up all forwards")
+            stop_task_in_background("listen")
+            _bind_local(cleanup=True)
 
 
 def __main__():
@@ -85,9 +95,7 @@ def __main__():
             flag("nobind", "n")
         ),
         subcommand("listen", help="Bind forwarded docker ports to localhost", run=bind_local).has(
-            flag("cleanup", "c"),
-            flag("background", "b"),
-            flag("verbose", "v")
+            argument("command", required=True, type=str, strict_choices=True, choices=["start", "stop", "cleanup"]),
         )
     ).run()
 

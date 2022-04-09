@@ -6,27 +6,28 @@ It will let you launch a new VM and install docker inside and mount `/Users` in 
 
 ## Setup
 You need multipass and python3 installed.<br>
-`brew install multipass python3`
-
-*Optional: Install socat to bind serices to localhost* <br>
-`brew install socat`
+`brew install multipass python3 socat`
 
 Install dependecies with [Poetry](https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions) <br>
 `poetry install`
 
+Go into your poetry shell
+`poetry shell`
+
 You can then run `./dockipass.py launch` and it will setup, create and launch the virtual machine for you.
 
 ## Access dockercontainers from localhost
-Multipass does not natively bind forwared ports in the VM to localhost. You can however use the listen command to do this, it will check which ports are forwarded for all running containers and then use `socat` to bind the port and forward traffic to it. It will also kill any running instances of socat when the container is stopped. 
+Multipass does not natively bind ports that docker forwared from its containers in the VM to localhost. Dockipass will by default listening for these changes and forward these ports to your localhost when running `dockipass.py launch` and  `dockipass.py start`. You can prevent this behaviour by adding the flag `-nobind` when using those commands.
+When stopping or deleting the VM it will remove any forwarded ports, you can also stop the task that listens for changes by running `dockipass.py listen stop`. 
 
 ```sh
 Usage:
-dockipass.py listen [OPTIONS]
+dockipass.py listen [OPTIONS] COMMAND
+
+Arguments:
+   COMMAND - Choices: start, stop, cleanup
 
 Options:
-  -c, --cleanup
-  -b, --background
-  -v, --verbose
   -h, --help [SUBCOMMANDS...] - Display this help and exit
 ```
 

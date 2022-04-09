@@ -156,12 +156,10 @@ class Feature_Test_Dockipass(unittest.TestCase):
         subprocess.run([docker_cmd, "run", "--name", "testcontainer", "-p",
                         "8081:80", "-d", "nginxdemos/hello"], stdout=subprocess.PIPE)
 
-        subprocess.run(["./dockipass.py", "listen"])
+        subprocess.run(["./dockipass.py", "listen", "start"])
 
         pids = find_process("socat")
         self.assertEqual(len(pids), 1)
-
-        subprocess.run(["./dockipass.py", "listen", "-b"])
 
     def test_6dockercompose(self):
         process = subprocess.run(

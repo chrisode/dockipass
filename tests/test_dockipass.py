@@ -7,6 +7,7 @@ currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
+
 @patch("lib.config._get_config_from_file", Mock(return_value={}))
 @patch("lib.config._update_config_file", Mock())
 @patch("lib.multipass.run_cmd", return_value=True)
@@ -31,7 +32,7 @@ class TestDockipass(unittest.TestCase):
         mock_print.assert_called()
         mock_run_cmd.assert_has_calls(calls)
 
-        mock_bind_local.assert_called_with(background=True)
+        mock_bind_local.assert_called()
 
     @patch("dockipass.bind_local")
     @patch("dockipass.start_multipass")
@@ -39,7 +40,7 @@ class TestDockipass(unittest.TestCase):
         start()
         mock_start.assert_called()
 
-        mock_bind_local.assert_called_with(background=True)
+        mock_bind_local.assert_called()
 
     @patch("dockipass.bind_local")
     @patch("dockipass.start_multipass")
@@ -50,7 +51,7 @@ class TestDockipass(unittest.TestCase):
 
         mock_bind_local.assert_not_called()
 
-    @patch("dockipass.bind_local")
+    @patch("dockipass._bind_local")
     @patch("dockipass.stop_task_in_background")
     @patch("dockipass.stop_multipass")
     def test_stop(self, mock_stop, mock_stop_task, mock_bind_local, mock_run_cmd):
@@ -76,7 +77,24 @@ class TestDockipass(unittest.TestCase):
     @patch("builtins.print")
     @patch("dockipass.run_task_in_background")
     def test_bind_local_in_background(self, mock_run_task_in_background, mock_print, mock_run_cmd):
-        bind_local(background=True)
+        bind_local(command="start")
         mock_run_task_in_background.assert_called_with("listen")
         mock_print.assert_called_with(
             "Started to listen for portchanges in the background and binding them to localhost")
+
+    @patch("builtins.print")
+    @patch("dockipass.stop_task_in_background")
+    def test_bind_local_in_background(self, mock_stop_task_in_background, mock_print, mock_run_cmd):
+        bind_local(command="stop")
+        mock_stop_task_in_background.assert_called_with("listen")
+        mock_print.assert_called_with("Stopped listening for portchanges")
+
+    @patch("builtins.print")
+    @patch("dockipass.stop_task_in_background")
+    @patch("dockipass._bind_local")
+    def test_bind_local_in_background(self, mock_bind_local, mock_stop_task_in_background, mock_print, mock_run_cmd):
+        bind_local(command="cleanup")
+        mock_stop_task_in_background.assert_called_with("listen")
+        mock_bind_local.assert_called_with(cleanup=True)
+        mock_print.assert_called_with(
+            "Stopped listening for portchanges and cleaned up all forwards")
