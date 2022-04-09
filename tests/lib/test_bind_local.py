@@ -1,7 +1,7 @@
 from lib.bind_local import bind_local, get_docker_ports, forward, add_forwared_port, get_forwared_ports, unbind_all
-from lib.config import DEFAULT_NAME
+from lib.config import set_name
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import os
 import sys
 currentdir = os.path.dirname(os.path.realpath(__file__))
@@ -22,6 +22,8 @@ def docker_output(ports):
 forwarded_file = "forwared_ports.json"
 
 
+@patch("lib.config._get_config_from_file", Mock(return_value={}))
+@patch("lib.config._update_config_file", Mock())
 class TestBindLocalSetup(unittest.TestCase):
 
     def setUp(self):
@@ -47,6 +49,8 @@ class TestBindLocalSetup(unittest.TestCase):
         self.assertTrue(os.path.exists(forwarded_file))
 
 
+@patch("lib.config._get_config_from_file", Mock(return_value={}))
+@patch("lib.config._update_config_file", Mock())
 class TestBindLocalHelpers(unittest.TestCase):
 
     def setUp(self):
@@ -78,6 +82,8 @@ class TestBindLocalHelpers(unittest.TestCase):
         self.assertTrue(str(mock_run_in_bg.call_args[0]).find("8080") > -1)
 
 
+@patch("lib.config._get_config_from_file", Mock(return_value={}))
+@patch("lib.config._update_config_file", Mock())
 class TestBindLocal(unittest.TestCase):
 
     def setUp(self):
@@ -103,7 +109,7 @@ class TestBindLocal(unittest.TestCase):
         mock_ports.assert_called()
 
         # It should forward the port
-        mock_forward.assert_called_with("8080", name=DEFAULT_NAME)
+        mock_forward.assert_called_with("8080")
 
         # It should not have killed any process
         mock_kill.assert_not_called()
@@ -179,8 +185,8 @@ class TestBindLocal(unittest.TestCase):
     @patch("lib.bind_local.run_in_background", return_value="1")
     @patch("lib.bind_local.get_docker_ports", return_value=["8080"])
     def test_bind_local_run_called_with_name(self, mock_ports, mock_run):
-        bind_local(name="kaka")
+        set_name("kaka")
+        bind_local()
         mock_run.assert_called()
         called_with = " ".join(mock_run.call_args[0][0])
         self.assertTrue(called_with.find("kaka") > -1)
-

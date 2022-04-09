@@ -14,19 +14,6 @@ from lib.config import DEFAULT_NAME, ARCHITECTURE
 HOME = str(Path.home())
 
 
-def add_docker_context(name=DEFAULT_NAME):
-    run_cmd(["docker", "context", "create", name, "--docker",
-            f"\"host=ssh://ubuntu@{name}.local\""])
-
-
-def remove_docker_context(name=DEFAULT_NAME):
-    run_cmd(["docker", "context", "rm", name])
-
-
-def use_docker_context(name=DEFAULT_NAME):
-    run_cmd(["docker", "context", "use", name])
-
-
 def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, nobind=False):
     launched = launch_multipass(name, memory, disk, cpu)
 
@@ -38,39 +25,42 @@ def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, nobind=False):
     print(
         f"To use Docker and compose from your terminal add multipass to your path: PATH=\"{HOME}/Library/Application Support/multipass/bin\":$PATH")
 
-    start_multipass(name)
+    start_multipass()
 
     if nobind == False:
         bind_local(background=True)
 
 
-def start(name=DEFAULT_NAME, nobind=False):
-    start_multipass(name)
+def start(nobind=False):
+    start_multipass()
 
     if nobind == False:
         bind_local(background=True)
 
 
-def stop(name=DEFAULT_NAME):
+def stop():
     stop_task_in_background("listen")
     bind_local(cleanup=True)
-    stop_multipass(name)
+    stop_multipass()
 
 
-def delete(name=DEFAULT_NAME):
+def delete():
     stop_task_in_background("listen")
     bind_local(cleanup=True)
 
-    delete_multipass(name)
+    delete_multipass()
 
 
-def bind_local(name=DEFAULT_NAME, cleanup=False, verbose=False, background=False):
+def bind_local(cleanup=False, verbose=False, background=False):
     if background == True:
-        run_task_in_background("listen")
-        print("Started to listen for portchanges in the background and binding them to localhost")
+        started = run_task_in_background("listen")
+        if started:
+            print("Started to listen for portchanges in the background and binding them to localhost")
+        else:
+            print("Already listening for ports in background, doing nothing")
         return
 
-    _bind_local(name, cleanup, verbose)
+    _bind_local(cleanup, verbose)
 
 
 def __main__():
@@ -81,18 +71,12 @@ def __main__():
 
     CliBuilder().has(
         subcommand("start", help="start multipass", run=start).has(
-            argument("name", required=False, type=str, default=DEFAULT_NAME),
             flag("nobind", "n")
         ),
-        subcommand("stop", help="stop multipass", run=stop).has(
-            argument("name", required=False, type=str, default=DEFAULT_NAME),
-        ),
-        subcommand("restart", help="restart multipass", run=restart).has(
-            argument("name", required=False, type=str, default=DEFAULT_NAME),
-        ),
-        subcommand("delete", help="remove a multipass instance", run=delete).has(
-            argument("name", required=False, type=str, default=DEFAULT_NAME),
-        ),
+        subcommand("stop", help="stop multipass", run=stop).has(),
+        subcommand("restart", help="restart multipass", run=restart).has(),
+        subcommand("delete", help="remove a multipass instance",
+                   run=delete).has(),
         subcommand("launch", help="launch multipass", run=launch).has(
             argument("name", required=False, type=str, default=DEFAULT_NAME),
             parameter("memory", "m", type=str, default="2G"),
@@ -101,7 +85,6 @@ def __main__():
             flag("nobind", "n")
         ),
         subcommand("listen", help="Bind forwarded docker ports to localhost", run=bind_local).has(
-            argument("name", required=False, type=str, default=DEFAULT_NAME),
             flag("cleanup", "c"),
             flag("background", "b"),
             flag("verbose", "v")

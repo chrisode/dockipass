@@ -67,7 +67,7 @@ def run_in_background(cmd: list, shell=False):
     process = sarge_run(cmd, stdout=Capture(),
                         stderr=Capture(), shell=shell, async_=True)
     # _async returns faster than the process can return, so we need to wait a few milliseconds
-    sleep(0.1)
+    sleep(0.5)
     return process.commands[0].process.pid
 
 

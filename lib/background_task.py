@@ -18,11 +18,12 @@ def check_for_background_task(argv):
     return True
 
 
-def run_task_in_background(task):
-    if check_if_task_is_running(task) == True:
+def run_task_in_background(task_name):
+    if check_if_task_is_running(task_name) == True:
         return False
 
-    run_in_background(["python3", "./dockipass.py", "background", task])
+    run_in_background(["python3", "./dockipass.py", "background", task_name])
+    return True
 
 
 def stop_task_in_background(task):
@@ -31,20 +32,10 @@ def stop_task_in_background(task):
         kill_process(int(pid))
 
 
-def run_task_forever(task, sleep_time=30):
+def run_task_forever(task_name, sleep_time=30):
     while True:
-        result = run_task(task)
-        if result == False:
-            break
-
+        available_background_tasks[task_name]()
         sleep(sleep_time)
-
-
-def run_task(task):
-    if not task in available_background_tasks:
-        return False
-
-    available_background_tasks[task]()
 
 
 def check_if_task_is_running(task):

@@ -1,13 +1,14 @@
 
 from .commander import run, run_in_background, kill_process, find_process
-from .config import DEFAULT_NAME
+from .multipass import get_name
+from .config import DOCKER_BINARY
 from json import dumps as json_dumps, loads as json_loads
 from os import path
 
 VERBOSE = False
 
 
-def bind_local(name=DEFAULT_NAME, cleanup=False, verbose=False):
+def bind_local(cleanup=False, verbose=False):
     global VERBOSE
     global forwared_ports
     VERBOSE = verbose
@@ -17,7 +18,7 @@ def bind_local(name=DEFAULT_NAME, cleanup=False, verbose=False):
         return
 
     ports = get_docker_ports()
-    forward_ports(ports, name=name)
+    forward_ports(ports)
 
     VERBOSE = False
     forwared_ports = {}
@@ -25,7 +26,7 @@ def bind_local(name=DEFAULT_NAME, cleanup=False, verbose=False):
 
 def get_docker_ports():
     docker_output = run(
-        ["docker", "ps", "--format", "\"{{.Ports}}\""], live=False)
+        [DOCKER_BINARY, "ps", "--format", "\"{{.Ports}}\""], live=False)
 
     if not docker_output:
         forward_ports([])
@@ -67,7 +68,7 @@ forwared_ports = {}
 ports_file = "forwared_ports.json"
 
 
-def forward_ports(ports, name=DEFAULT_NAME):
+def forward_ports(ports):
     forwared_ports = get_forwared_ports()
     for port in list(forwared_ports.keys()):
         if port not in ports:
@@ -78,7 +79,7 @@ def forward_ports(ports, name=DEFAULT_NAME):
 
     for port in ports:
         if port not in forwared_ports:
-            forward(port, name=name)
+            forward(port)
         else:
             log(
                 f"Port {port} is already forwarded on pid {forwared_ports[port]}")
@@ -91,9 +92,9 @@ def stop_forward(port):
     log(f"Stopped forwarding on port: {port}, killed pid: {pid}")
 
 
-def forward(port, name=DEFAULT_NAME):
+def forward(port):
     pid = run_in_background(
-        ["socat", f"\"tcp-listen:{port},bind=localhost,reuseaddr,fork\"", f"\"tcp:{name}.local:{port}\""], shell=True)
+        ["socat", f"\"tcp-listen:{port},bind=localhost,reuseaddr,fork\"", f"\"tcp:{get_name()}.local:{port}\""], shell=True)
     add_forwared_port(port, pid)
     log(f"Forwarded port: {port}, socat running with pid: {pid}")
 

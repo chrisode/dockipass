@@ -6,7 +6,8 @@ from pathlib import Path
 
 from lib.commander import find_process, kill_process
 from lib.multipass import aliases, modify_compose_alias
-from tests.test_helpers.common import backup_forwared, restore_forwarded
+from lib.config import _reset
+from tests.test_helpers.common import backup_forwared, restore_forwarded, backup_config, restore_config
 import subprocess
 
 from sarge import run as sarge_run, Capture
@@ -70,15 +71,19 @@ class Feature_Test_Dockipass(unittest.TestCase):
     @classmethod
     def tearDownClass(self):
         restore_forwarded()
+        restore_config()
         kill_background_listen()
         run(["multipass", "delete", vm_name])
         run(["multipass", "purge"])
         restore_alias()
+        subprocess.run(["./dockipass.py", "listen", "-b"])
 
     @classmethod
     def setUpClass(self):
+        backup_config()
         backup_forwared()
         remove_alias()
+        _reset()
 
     def test_1launch(self):
 
@@ -111,7 +116,7 @@ class Feature_Test_Dockipass(unittest.TestCase):
         self.assertEqual(len(pids), 1)
 
     def test_1stop(self):
-        run(["./dockipass.py", "stop", vm_name])
+        run(["./dockipass.py", "stop"])
 
         # The containter have been stopped
         info = vm_info()["info"][vm_name]
@@ -122,7 +127,7 @@ class Feature_Test_Dockipass(unittest.TestCase):
         self.assertEqual(len(pids), 0)
 
     def test_2start(self):
-        run(["./dockipass.py", "start", vm_name])
+        run(["./dockipass.py", "start"])
 
         # The containter is running
         info = vm_info()["info"][vm_name]
@@ -133,7 +138,7 @@ class Feature_Test_Dockipass(unittest.TestCase):
         self.assertEqual(len(pids), 1)
 
     def test_4restart(self):
-        run(["./dockipass.py", "restart", vm_name])
+        run(["./dockipass.py", "restart"])
 
         # The containter is running
         info = vm_info()["info"][vm_name]
@@ -172,7 +177,7 @@ class Feature_Test_Dockipass(unittest.TestCase):
             "utf-8").split("\n"))
 
     def test_8delete(self):
-        run(["./dockipass.py", "delete", vm_name])
+        run(["./dockipass.py", "delete"])
 
         # Stopped background process
         pids = find_process("background listen")

@@ -39,12 +39,12 @@ Options:
   -h, --help [SUBCOMMANDS...] - Display this help and exit
 
 Commands:
-  start [NAME]   - start multipass
-  stop [NAME]    - stop multipass
-  restart [NAME] - restart multipass
-  delete [NAME]  - remove a multipass instance
-  launch [NAME]  - launch multipass
-  listen         - Bind forwarded docker ports to localhost
+  start         - start multipass
+  stop          - stop multipass
+  restart       - restart multipass
+  delete        - remove a multipass instance
+  launch [NAME] - launch multipass
+  listen        - Bind forwarded docker ports to localhost
 
 Run "dockipass.py COMMAND --help" for more information on a command.
 ```

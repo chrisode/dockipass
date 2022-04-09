@@ -1,4 +1,4 @@
-from lib.background_task import check_for_background_task, run_task, run_task_in_background, stop_task_in_background
+from lib.background_task import check_for_background_task, run_task_in_background, stop_task_in_background
 import unittest
 from unittest.mock import patch
 import os
@@ -31,13 +31,6 @@ class BackroundTasks(unittest.TestCase):
 
         result = check_for_background_task(argv=["cmd", "backgrounder"])
         self.assertFalse(result)
-
-    @patch("builtins.print")
-    @patch("lib.background_task.available_background_tasks", {"listen": func})
-    def test_run_task(self, mock_print):
-        run_task("listen")
-
-        mock_print.assert_called()
 
     @patch("builtins.print")
     @patch("lib.commander.run", return_value="13212 process1\n123132 process3\n123123 python3 ./dockipass.py background listen\n123413 tests2")
