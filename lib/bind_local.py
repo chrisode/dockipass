@@ -1,4 +1,5 @@
 
+from .config import get_forwarded_ports, set_forwarded_ports
 from .commander import run_in_background, kill_process, find_process
 from .docker import get_ports
 from .multipass import get_name
@@ -24,12 +25,9 @@ def bind_local(cleanup=False, verbose=False):
     forwared_ports = {}
 
 
-forwared_ports = {}
-ports_file = "forwared_ports.json"
-
-
 def forward_ports(ports):
-    forwared_ports = get_forwared_ports()
+    forwared_ports = get_forwarded_ports()
+
     for port in list(forwared_ports.keys()):
         if port not in ports:
             stop_forward(port)
@@ -46,7 +44,8 @@ def forward_ports(ports):
 
 
 def stop_forward(port):
-    pid = forwared_ports[port]
+    ports = get_forwarded_ports()
+    pid = ports[port]
     kill_process(pid)
     remove_forwared_port(port)
     log(f"Stopped forwarding on port: {port}, killed pid: {pid}")
@@ -59,35 +58,17 @@ def forward(port):
     log(f"Forwarded port: {port}, socat running with pid: {pid}")
 
 
-def get_forwared_ports():
-    global forwared_ports
-
-    if not forwared_ports:
-        if not path.exists(ports_file):
-            return {}
-
-        with open(ports_file, "r") as file:
-            json = json_loads(file.read())
-            forwared_ports = json
-
-    return forwared_ports
-
-
 def remove_forwared_port(port):
-    global forwared_ports
-    if port in forwared_ports:
-        del forwared_ports[port]
-        store_forwared_ports()
+    ports = get_forwarded_ports()
+    if port in ports:
+        del ports[port]
+        set_forwarded_ports(ports)
 
 
 def add_forwared_port(port, pid):
-    forwared_ports[port] = pid
-    store_forwared_ports()
-
-
-def store_forwared_ports():
-    with open(ports_file, "w+") as file:
-        file.write(json_dumps(forwared_ports))
+    ports = get_forwarded_ports()
+    ports[port] = pid
+    set_forwarded_ports(ports)
 
 
 # Unbinds all ports and resets forwarded_ports
@@ -98,9 +79,7 @@ def unbind_all():
         if pid != "":
             kill_process(int(pid))
 
-    global forwared_ports
-    forwared_ports = {}
-    store_forwared_ports()
+    set_forwarded_ports({})
 
 
 def log(msg):

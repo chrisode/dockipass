@@ -1,4 +1,4 @@
-from .config import DEFAULT_NAME, ARCHITECTURE, get_name as get_name_from_config, set_name
+from .config import DEFAULT_NAME, ARCHITECTURE, get_name as get_name_from_config, set_name, _reset
 from .commander import run as run_cmd
 from .docker import patch_compose
 
@@ -31,7 +31,8 @@ def delete():
     remove_alias()
     _run_multipass(["delete",  get_name()])
     _run_multipass(["purge"])
-
+    _reset()
+    
 
 def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2):
     if get_name_from_config():

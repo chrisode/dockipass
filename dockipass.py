@@ -8,7 +8,7 @@ from lib.commander import run as run_cmd
 from lib.multipass import start as start_multipass, stop as stop_multipass, restart, delete as delete_multipass, launch as launch_multipass
 from lib.bind_local import bind_local as _bind_local
 from lib.background_task import check_for_background_task, run_task_forever, run_task_in_background, stop_task_in_background, stop_task_in_background
-from lib.config import DEFAULT_NAME, ARCHITECTURE
+from lib.config import DEFAULT_NAME, ARCHITECTURE, _reset
 
 
 HOME = str(Path.home())

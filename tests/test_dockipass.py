@@ -8,8 +8,8 @@ parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
 
-@patch("lib.config._get_config_from_file", Mock(return_value={}))
-@patch("lib.config._update_config_file", Mock())
+@patch("lib.config._config.config", {})
+@patch("lib.config._config.update_config_file", Mock())
 @patch("lib.multipass.run_cmd", return_value=True)
 class TestDockipass(unittest.TestCase):
 

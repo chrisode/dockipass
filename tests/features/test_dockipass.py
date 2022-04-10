@@ -2,12 +2,10 @@ import unittest
 import os
 import sys
 import json
-from pathlib import Path
-
 from lib.commander import find_process, kill_process
 from lib.multipass import aliases, patch_compose
-from lib.config import _reset
-from tests.test_helpers.common import backup_forwared, restore_forwarded, backup_config, restore_config
+from lib.config import _reset, HOME
+from tests.test_helpers.common import backup_config, restore_config
 import subprocess
 
 from sarge import run as sarge_run, Capture
@@ -16,7 +14,6 @@ currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 
-HOME = str(Path.home())
 vm_name = "feature-test"
 
 multipass_bin_path = f"{HOME}/Library/Application Support/multipass/bin"
@@ -25,13 +22,15 @@ docker_compose_cmd = f"{multipass_bin_path}/docker-compose"
 
 
 def run(cmd):
-    process = sarge_run(" ".join(cmd), shell=True, stdout=Capture(), stderr=Capture())
+    process = sarge_run(" ".join(cmd), shell=True,
+                        stdout=Capture(), stderr=Capture())
     return process.stdout.read().decode("utf-8"), process.stderr.read().decode("utf-8")
 
 
 def list_vm():
     vm, err = run(["multipass", "list", "--format", "json"])
     return json.loads(vm)
+
 
 def find_vm(name):
     list = list_vm()["list"]
@@ -70,7 +69,6 @@ class Feature_Test_Dockipass(unittest.TestCase):
 
     @classmethod
     def tearDownClass(self):
-        restore_forwarded()
         restore_config()
         kill_background_listen()
         run(["multipass", "delete", vm_name])
@@ -81,7 +79,6 @@ class Feature_Test_Dockipass(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         backup_config()
-        backup_forwared()
         remove_alias()
         _reset()
 

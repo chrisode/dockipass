@@ -1,5 +1,5 @@
 
-from lib.multipass import start, stop, restart, launch, delete, set_name
+from lib.multipass import start, stop, restart, launch, delete, set_name, _reset, get_name_from_config
 import unittest
 from unittest.mock import patch, call, mock_open, Mock
 import os
@@ -10,17 +10,18 @@ sys.path.append(parentdir)
 
 
 @patch("lib.multipass.run_cmd", return_value=True)
-@patch("lib.config._get_config_from_file", Mock(return_value={}))
-@patch("lib.config._update_config_file", Mock())
+@patch("lib.config._config.config", {})
+@patch("lib.config._config.update_config_file", Mock())
 class TestMultipass(unittest.TestCase):
 
-    @patch("lib.config._update_config_file", Mock())
-    def setUp(self):
-        set_name(None)
+    @classmethod
+    @patch("lib.config._config.update_config_file", Mock())
+    def setUpClass(cls):
+        _reset()
 
-    @patch("lib.config._update_config_file", Mock())
+    @patch("lib.config._config.update_config_file", Mock())
     def tearDown(self):
-        set_name(None)
+        _reset()
 
     def test_start(self, mock_run_cmd):
         set_name("test")
@@ -43,6 +44,7 @@ class TestMultipass(unittest.TestCase):
     @patch("builtins.open", new_callable=mock_open, read_data="#!/bin/sh\n\ndocker-compose -- awd")
     @patch("lib.multipass.ARCHITECTURE", "amd64")
     def test_launch(self, mock_mock_open, mock_run_cmd):
+        set_name(None)
         launch("test")
 
         calls = [
@@ -78,19 +80,21 @@ class TestMultipass(unittest.TestCase):
 @patch("lib.multipass.ARCHITECTURE", "amd64")
 @patch("builtins.open", new_callable=mock_open)
 @patch("lib.multipass.run_cmd", return_value=True)
-@patch("lib.config._get_config_from_file", Mock(return_value={}))
-@patch("lib.config._update_config_file", Mock())
+@patch("lib.config._config.config", {})
+@patch("lib.config._config.update_config_file", Mock())
 class TestLaunch(unittest.TestCase):
 
-    @patch("lib.config._update_config_file", Mock())
-    def setUp(self):
-        set_name(None)
+    @classmethod
+    @patch("lib.config._config.update_config_file", Mock())
+    def setUpClass(cls):
+        _reset()
 
-    @patch("lib.config._update_config_file", Mock())
+    @patch("lib.config._config.update_config_file", Mock())
     def tearDown(self):
-        set_name(None)
+        _reset()
 
     def test_with_default_name(self, mock_run_cmd, mopen):
+        _reset()
         launch()
 
         calls = [
@@ -105,6 +109,7 @@ class TestLaunch(unittest.TestCase):
         mock_run_cmd.assert_has_calls(calls)
 
     def test_with_non_default_cpu(self, mock_run_cmd, mopen):
+        _reset()
         launch(cpu=4)
 
         calls = [
@@ -119,6 +124,7 @@ class TestLaunch(unittest.TestCase):
         mock_run_cmd.assert_has_calls(calls)
 
     def test_with_more_memory(self, mock_run_cmd, mopen):
+        _reset()
         launch(memory="4G")
 
         calls = [
@@ -133,6 +139,7 @@ class TestLaunch(unittest.TestCase):
         mock_run_cmd.assert_has_calls(calls)
 
     def test_with_more_disk(self, mock_run_cmd, mopen):
+        _reset()
         launch(disk="40G")
 
         calls = [
