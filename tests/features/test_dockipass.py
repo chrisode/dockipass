@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from lib.commander import find_process, kill_process
-from lib.multipass import aliases, modify_compose_alias
+from lib.multipass import aliases, patch_compose
 from lib.config import _reset
 from tests.test_helpers.common import backup_forwared, restore_forwarded, backup_config, restore_config
 import subprocess
@@ -56,7 +56,7 @@ def restore_alias():
     if find_vm(name):
         for alias in aliases:
             run(["multipass", "alias", f"{name}:{alias}", alias])
-        modify_compose_alias()
+        patch_compose()
 
 
 def remove_alias():
@@ -76,7 +76,7 @@ class Feature_Test_Dockipass(unittest.TestCase):
         run(["multipass", "delete", vm_name])
         run(["multipass", "purge"])
         restore_alias()
-        subprocess.run(["./dockipass.py", "listen", "-b"])
+        subprocess.run(["./dockipass.py", "listen", "start"])
 
     @classmethod
     def setUpClass(self):
@@ -115,7 +115,7 @@ class Feature_Test_Dockipass(unittest.TestCase):
         pids = find_process("background listen")
         self.assertEqual(len(pids), 1)
 
-    def test_1stop(self):
+    def test_2stop(self):
         run(["./dockipass.py", "stop"])
 
         # The containter have been stopped
@@ -126,7 +126,7 @@ class Feature_Test_Dockipass(unittest.TestCase):
         pids = find_process("background listen")
         self.assertEqual(len(pids), 0)
 
-    def test_2start(self):
+    def test_3start(self):
         run(["./dockipass.py", "start"])
 
         # The containter is running

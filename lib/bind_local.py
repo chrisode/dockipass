@@ -1,7 +1,7 @@
 
-from .commander import run, run_in_background, kill_process, find_process
+from .commander import run_in_background, kill_process, find_process
+from .docker import get_ports
 from .multipass import get_name
-from .config import DOCKER_BINARY
 from json import dumps as json_dumps, loads as json_loads
 from os import path
 
@@ -17,51 +17,11 @@ def bind_local(cleanup=False, verbose=False):
         unbind_all()
         return
 
-    ports = get_docker_ports()
+    ports = get_ports()
     forward_ports(ports)
 
     VERBOSE = False
     forwared_ports = {}
-
-
-def get_docker_ports():
-    docker_output = run(
-        [DOCKER_BINARY, "ps", "--format", "\"{{.Ports}}\""], live=False)
-
-    if not docker_output:
-        forward_ports([])
-        return False
-
-    rows = docker_output.strip("\"").split("\n")
-
-    all_ports = []
-    for row in rows:
-        if not row:
-            continue
-
-        ports_list = get_and_format_ports(row)
-        all_ports.extend(ports_list)
-
-    return all_ports
-
-
-def get_and_format_ports(ports):
-    formated_list = []
-    ports_list = ports.split(", ")
-
-    for port_addr in ports_list:
-        port = get_port(port_addr)
-        if (port):
-            formated_list.append(port)
-
-    return formated_list
-
-
-def get_port(port):
-    if port.startswith(":::"):
-        return False
-
-    return port.split("->")[0].split(":")[1]
 
 
 forwared_ports = {}

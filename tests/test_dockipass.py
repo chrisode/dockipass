@@ -15,7 +15,7 @@ class TestDockipass(unittest.TestCase):
 
     @patch("builtins.print")
     @patch("dockipass.bind_local")
-    @patch("lib.multipass.modify_compose_alias")
+    @patch("lib.multipass.patch_compose")
     @patch("lib.multipass.ARCHITECTURE", "amd64")
     def test_launch(self, mock_alias_compose, mock_bind_local, mock_print, mock_run_cmd):
 

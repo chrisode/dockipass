@@ -1,5 +1,5 @@
 
-from lib.multipass import start, stop, restart, launch, delete, modify_compose_alias, get_name, set_name
+from lib.multipass import start, stop, restart, launch, delete, set_name
 import unittest
 from unittest.mock import patch, call, mock_open, Mock
 import os
