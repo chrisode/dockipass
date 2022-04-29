@@ -1,0 +1,42 @@
+{
+    "errors": [
+    ],
+    "info": {
+        "test": {
+            "disks": {
+                "sda1": {
+                    "total": "20636430336",
+                    "used": "2305495040"
+                }
+            },
+            "image_hash": "ccc11e625acd878095f2eaa15541f4f788789ea964e3226b2511072b6718d455",
+            "image_release": "20.04 LTS",
+            "ipv4": [
+                "192.168.65.26",
+                "172.17.0.1"
+            ],
+            "load": [
+                0.06,
+                0.02,
+                0
+            ],
+            "memory": {
+                "total": 2070245376,
+                "used": 243224576
+            },
+            "mounts": {
+                "/Users": {
+                    "gid_mappings": [
+                        "45695136:default"
+                    ],
+                    "source_path": "/Users",
+                    "uid_mappings": [
+                        "1202164045:default"
+                    ]
+                }
+            },
+            "release": "Ubuntu 20.04.4 LTS",
+            "state": "Running"
+        }
+    }
+}

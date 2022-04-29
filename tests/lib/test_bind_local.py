@@ -106,7 +106,7 @@ class TestBindLocal(unittest.TestCase):
 
         mock_print.assert_not_called()
 
-    @patch("lib.commander.run", return_value="123123 testar2\n11 s008  S      0:00.01 socat tcp-listen:8080,bind=localhost,reuseaddr,fork tcp:dockipass-alias.local:8080\n124123 testtest")
+    @patch("lib.commander.run", return_value=("123123 testar2\n11 s008  S      0:00.01 socat tcp-listen:8080,bind=localhost,reuseaddr,fork tcp:dockipass-alias.local:8080\n124123 testtest", True))
     @patch("lib.bind_local.kill_process")
     def test_unbind_all(self, mock_kill, mock_run):
         unbind_all()

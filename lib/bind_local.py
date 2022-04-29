@@ -3,8 +3,6 @@ from .config import get_forwarded_ports, set_forwarded_ports
 from .commander import run_in_background, kill_process, find_process
 from .docker import get_ports
 from .multipass import get_name
-from json import dumps as json_dumps, loads as json_loads
-from os import path
 
 VERBOSE = False
 

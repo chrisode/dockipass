@@ -3,7 +3,7 @@ import os
 import sys
 import json
 from lib.commander import find_process, kill_process
-from lib.multipass import aliases, patch_compose
+from lib.multipass import _aliases, patch_compose
 from lib.config import _reset, HOME
 from tests.test_helpers.common import backup_config, restore_config
 import subprocess
@@ -53,7 +53,7 @@ def kill_background_listen():
 def restore_alias():
     name = "dockipass"
     if find_vm(name):
-        for alias in aliases:
+        for alias in _aliases:
             run(["multipass", "alias", f"{name}:{alias}", alias])
         patch_compose()
 
@@ -61,7 +61,7 @@ def restore_alias():
 def remove_alias():
     name = "dockipass"
     if find_vm(name):
-        for alias in aliases:
+        for alias in _aliases:
             run(["multipass", "unalias", alias])
 
 
@@ -171,7 +171,19 @@ class Feature_Test_Dockipass(unittest.TestCase):
         self.assertIn("Usage:  docker buildx [OPTIONS] COMMAND", process.stdout.decode(
             "utf-8").split("\n"))
 
-    def test_8delete(self):
+    def test_8status(self):
+        status, err = run(["./dockipass.py", "status"])
+
+        self.assertEqual(err, "")
+
+        self.assertIn("VM Name:\t feature-test\n", status)
+        self.assertIn("State:\t\t Running\n", status)
+        self.assertIn("Mounts setup:\t True\n", status)
+        self.assertIn("Aliases setup:\t True\n", status)
+        self.assertIn("Listening:\t True\n", status)
+        self.assertIn("Forwarded:\t 8081\n", status)
+
+    def test_9delete(self):
         run(["./dockipass.py", "delete"])
 
         # Stopped background process

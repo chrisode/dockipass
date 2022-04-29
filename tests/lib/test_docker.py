@@ -18,7 +18,7 @@ def docker_output(ports):
 
 class TestDocker(unittest.TestCase):
 
-    @patch("lib.docker.run", Mock(return_value=docker_output(["8080"])))
+    @patch("lib.docker.run", Mock(return_value=(docker_output(["8080"]), True)))
     def test_get_docker_ports_should_return_ports(self):
         ports = get_ports()
         self.assertEqual(ports, ["8080"])

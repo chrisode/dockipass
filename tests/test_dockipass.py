@@ -22,11 +22,11 @@ class TestDockipass(unittest.TestCase):
         launch("test")
         calls = [
             call(["multipass", "launch", "-c", "2", "-m", "2G", "-d", "20G", "-n", "test",
-                 "20.04", "--cloud-init", f"\"cloud-init-config/amd64.yaml\""], shell=True),
-            call(["multipass", "mount", "/Users/", "test"], shell=False),
-            call(["multipass", "alias", "test:docker", "docker"], shell=False),
+                 "20.04", "--cloud-init", f"\"cloud-init-config/amd64.yaml\""], shell=True, live=True),
+            call(["multipass", "mount", "/Users/", "test"], shell=False, live=True),
+            call(["multipass", "alias", "test:docker", "docker"], shell=False, live=True),
             call(["multipass", "alias", "test:docker-compose",
-                 "docker-compose"], shell=False)
+                 "docker-compose"], shell=False, live=True)
         ]
 
         mock_print.assert_called()
@@ -66,10 +66,10 @@ class TestDockipass(unittest.TestCase):
         delete()
 
         calls = [
-            call(["multipass", "unalias", "docker"], shell=False),
-            call(["multipass", "unalias", "docker-compose"], shell=False),
-            call(["multipass", "delete", "dockipass"], shell=False),
-            call(["multipass", "purge"], shell=False)
+            call(["multipass", "unalias", "docker"], shell=False, live=True),
+            call(["multipass", "unalias", "docker-compose"], shell=False, live=True),
+            call(["multipass", "delete", "dockipass"], shell=False, live=True),
+            call(["multipass", "purge"], shell=False, live=True)
         ]
 
         mock_run_cmd.assert_has_calls(calls)

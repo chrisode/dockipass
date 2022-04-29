@@ -3,7 +3,7 @@ from .commander import run
 
 
 def get_ports():
-    docker_output = run([DOCKER_BINARY, "ps", "--format", "\"{{.Ports}}\""], live=False)
+    docker_output, status = run([DOCKER_BINARY, "ps", "--format", "\"{{.Ports}}\""], live=False)
 
     if not docker_output:
         return []

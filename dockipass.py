@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
+__version__ = "1.0.0"
 
 from nuclear import CliBuilder, argument, flag, parameter, subcommand
-from pathlib import Path
 import sys
 
-from lib.commander import run as run_cmd
 from lib.multipass import start as start_multipass, stop as stop_multipass, restart, delete as delete_multipass, launch as launch_multipass
 from lib.bind_local import bind_local as _bind_local
 from lib.background_task import check_for_background_task, run_task_forever, run_task_in_background, stop_task_in_background, stop_task_in_background
-from lib.config import DEFAULT_NAME, ARCHITECTURE, _reset
-
-
-HOME = str(Path.home())
+from lib.config import DEFAULT_NAME, HOME
+from lib.status import status
 
 
 def launch(name=DEFAULT_NAME, memory="2G", disk="20G", cpu=2, nobind=False):
@@ -73,11 +70,14 @@ def bind_local(command="start"):
             _bind_local(cleanup=True)
 
 
+def print_status():
+    print(status())
+
+
 def __main__():
 
     if (check_for_background_task(sys.argv)):
         run_task_forever(sys.argv[2])
-        return
 
     CliBuilder().has(
         subcommand("start", help="start multipass", run=start).has(
@@ -95,8 +95,10 @@ def __main__():
             flag("nobind", "n")
         ),
         subcommand("listen", help="Bind forwarded docker ports to localhost", run=bind_local).has(
-            argument("command", required=True, type=str, strict_choices=True, choices=["start", "stop", "cleanup"]),
-        )
+            argument("command", required=True, type=str,
+                     strict_choices=True, choices=["start", "stop", "cleanup"]),
+        ),
+        subcommand("status", help="get status", run=print_status).has()
     ).run()
 
 

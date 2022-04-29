@@ -13,17 +13,18 @@ def run(cmd, live=True, shell=False):
     process = sarge_run(cmd, stdout=Capture(), stderr=Capture(), shell=shell)
 
     if live == False:
-        return runner(process)
+        return runner(process, live)
     else:
         return run_live(process)
 
 
-def runner(process):
+def runner(process, live):
     if (check_process(process) == False):
-        print(read(process.stderr))
-        return False
+        if live == True:
+            print(read(process.stderr))
+        return read(process.stderr), False
 
-    return read(process.stdout)
+    return read(process.stdout), True
 
 
 def run_live(process):
@@ -77,7 +78,7 @@ def find_process(process):
 
 
 def search_for_process(process):
-    processes = run(["ps", "ax"], live=False)
+    processes, status = run(["ps", "ax"], live=False)
     return re.findall(f"^.*{process}.*$", processes, re.MULTILINE)
 
 
