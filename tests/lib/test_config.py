@@ -22,6 +22,7 @@ class TestConfig(unittest.TestCase):
     def test_default_name(self):
         self.assertEqual(DEFAULT_NAME, "dockipass")
 
+    @patch("lib.config.path.exists", Mock(return_value=True))
     @patch("builtins.open", new_callable=mock_open, read_data="{\"name\": \"test\"}")
     def test_get_config_behaviour(self, mock_open):
         _config.update_config_from_file()
